@@ -3,20 +3,38 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Healthcare Recruiting ATS/CRM API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: candidates
+    description: Candidate management
+  - name: pipeline
+    description: Pipeline management
+  - name: notes
+    description: Candidate notes
+  - name: activities
+    description: Activity tracking
+  - name: tags
+    description: Candidate tags
+  - name: dashboard
+    description: Dashboard analytics
+  - name: search
+    description: Search operations
+  - name: import
+    description: Import operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +42,1172 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # AUTH
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/password:
+    patch:
+      operationId: changePassword
+      tags: [auth]
+      summary: Change password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordInput"
+      responses:
+        "200":
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # DASHBOARD
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/specialty-breakdown:
+    get:
+      operationId: getSpecialtyBreakdown
+      tags: [dashboard]
+      summary: Candidates by specialty
+      responses:
+        "200":
+          description: Specialty breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BreakdownItem"
+
+  /dashboard/state-breakdown:
+    get:
+      operationId: getStateBreakdown
+      tags: [dashboard]
+      summary: Candidates by state
+      responses:
+        "200":
+          description: State breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BreakdownItem"
+
+  /dashboard/pipeline-breakdown:
+    get:
+      operationId: getPipelineBreakdown
+      tags: [dashboard]
+      summary: Pipeline stage breakdown
+      responses:
+        "200":
+          description: Pipeline breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BreakdownItem"
+
+  /dashboard/weekly-growth:
+    get:
+      operationId: getWeeklyGrowth
+      tags: [dashboard]
+      summary: Weekly candidate growth
+      responses:
+        "200":
+          description: Weekly growth data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WeeklyGrowthItem"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Recent activity feed
+      responses:
+        "200":
+          description: Recent activities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Activity"
+
+  # CANDIDATES
+  /candidates:
+    get:
+      operationId: listCandidates
+      tags: [candidates]
+      summary: List candidates with filtering and pagination
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 25
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: specialty
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: licenseType
+          in: query
+          schema:
+            type: string
+        - name: pipelineStage
+          in: query
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        "200":
+          description: Paginated candidate list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CandidateListResponse"
+
+    post:
+      operationId: createCandidate
+      tags: [candidates]
+      summary: Create a new candidate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CandidateInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Candidate"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /candidates/bulk-delete:
+    post:
+      operationId: bulkDeleteCandidates
+      tags: [candidates]
+      summary: Delete multiple candidates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkIdsInput"
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /candidates/bulk-update:
+    patch:
+      operationId: bulkUpdateCandidates
+      tags: [candidates]
+      summary: Update multiple candidates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkUpdateInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /candidates/duplicates:
+    get:
+      operationId: getDuplicateCandidates
+      tags: [candidates]
+      summary: Get duplicate candidate groups
+      responses:
+        "200":
+          description: Duplicate groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DuplicateGroup"
+
+  /candidates/{id}:
+    get:
+      operationId: getCandidate
+      tags: [candidates]
+      summary: Get a single candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Candidate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Candidate"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    patch:
+      operationId: updateCandidate
+      tags: [candidates]
+      summary: Update a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CandidateUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Candidate"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      operationId: deleteCandidate
+      tags: [candidates]
+      summary: Delete a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /candidates/{id}/stage:
+    patch:
+      operationId: updateCandidateStage
+      tags: [candidates]
+      summary: Update pipeline stage
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StageInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Candidate"
+
+  /candidates/{id}/duplicate-action:
+    post:
+      operationId: handleDuplicateAction
+      tags: [candidates]
+      summary: Handle duplicate action (ignore, update, merge)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DuplicateActionInput"
+      responses:
+        "200":
+          description: Action applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # NOTES
+  /candidates/{id}/notes:
+    get:
+      operationId: listNotes
+      tags: [notes]
+      summary: List notes for a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Note"
+
+    post:
+      operationId: createNote
+      tags: [notes]
+      summary: Add a note to a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+
+  /candidates/{id}/notes/{noteId}:
+    patch:
+      operationId: updateNote
+      tags: [notes]
+      summary: Update a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+
+    delete:
+      operationId: deleteNote
+      tags: [notes]
+      summary: Delete a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ACTIVITIES
+  /candidates/{id}/activities:
+    get:
+      operationId: listActivities
+      tags: [activities]
+      summary: List activities for a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Activities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Activity"
+
+    post:
+      operationId: createActivity
+      tags: [activities]
+      summary: Log an activity for a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivityInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+
+  # TAGS
+  /tags:
+    get:
+      operationId: listTags
+      tags: [tags]
+      summary: List all available tags
+      responses:
+        "200":
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tag"
+
+  /candidates/{id}/tags:
+    post:
+      operationId: addCandidateTag
+      tags: [tags]
+      summary: Add a tag to a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TagInput"
+      responses:
+        "201":
+          description: Tag added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
+
+  /candidates/{id}/tags/{tagId}:
+    delete:
+      operationId: removeCandidateTag
+      tags: [tags]
+      summary: Remove a tag from a candidate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: tagId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+
+  # PIPELINE
+  /pipeline:
+    get:
+      operationId: getPipelineBoard
+      tags: [pipeline]
+      summary: Get pipeline board grouped by stage
+      responses:
+        "200":
+          description: Pipeline board
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PipelineColumn"
+
+  # SEARCH
+  /search/candidates:
+    get:
+      operationId: searchCandidates
+      tags: [search]
+      summary: Full-text search across candidates
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 25
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CandidateListResponse"
+
+  # IMPORT
+  /import/candidates:
+    post:
+      operationId: importCandidates
+      tags: [import]
+      summary: Import candidates from CSV/Excel data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportInput"
+      responses:
+        "200":
+          description: Import results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportResult"
+
+  /import/logs:
+    get:
+      operationId: listImportLogs
+      tags: [import]
+      summary: List import logs
+      responses:
+        "200":
+          description: Import logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ImportLog"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    SuccessResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: ["string", "null"]
+
+    # AUTH
+    LoginInput:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      required: [id, username, role]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        role:
+          type: string
+
+    PasswordInput:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+
+    # DASHBOARD
+    DashboardStats:
+      type: object
+      required: [totalCandidates, newToday, duplicatesFound, resumesUploaded, activePipeline]
+      properties:
+        totalCandidates:
+          type: integer
+        newToday:
+          type: integer
+        duplicatesFound:
+          type: integer
+        resumesUploaded:
+          type: integer
+        activePipeline:
+          type: integer
+        totalThisWeek:
+          type: integer
+        totalThisMonth:
+          type: integer
+
+    BreakdownItem:
+      type: object
+      required: [label, count]
+      properties:
+        label:
+          type: string
+        count:
+          type: integer
+
+    WeeklyGrowthItem:
+      type: object
+      required: [week, count]
+      properties:
+        week:
+          type: string
+        count:
+          type: integer
+        date:
+          type: string
+
+    # CANDIDATE
+    Candidate:
+      type: object
+      required: [id, fullName, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        fullName:
+          type: string
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        state:
+          type: ["string", "null"]
+        zipCode:
+          type: ["string", "null"]
+        position:
+          type: ["string", "null"]
+        specialty:
+          type: ["string", "null"]
+        experience:
+          type: ["string", "null"]
+        licenseType:
+          type: ["string", "null"]
+        licenseNumber:
+          type: ["string", "null"]
+        preferredLocation:
+          type: ["string", "null"]
+        availability:
+          type: ["string", "null"]
+        currentStatus:
+          type: ["string", "null"]
+        pipelineStage:
+          type: ["string", "null"]
+        recruiterNotes:
+          type: ["string", "null"]
+        resumeFile:
+          type: ["string", "null"]
+        source:
+          type: ["string", "null"]
+        isDuplicate:
+          type: boolean
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    CandidateInput:
+      type: object
+      required: [fullName]
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+        position:
+          type: string
+        specialty:
+          type: string
+        experience:
+          type: string
+        licenseType:
+          type: string
+        licenseNumber:
+          type: string
+        preferredLocation:
+          type: string
+        availability:
+          type: string
+        currentStatus:
+          type: string
+        pipelineStage:
+          type: string
+        recruiterNotes:
+          type: string
+        source:
+          type: string
+
+    CandidateUpdate:
+      type: object
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+        position:
+          type: string
+        specialty:
+          type: string
+        experience:
+          type: string
+        licenseType:
+          type: string
+        licenseNumber:
+          type: string
+        preferredLocation:
+          type: string
+        availability:
+          type: string
+        currentStatus:
+          type: string
+        pipelineStage:
+          type: string
+        recruiterNotes:
+          type: string
+        source:
+          type: string
+
+    CandidateListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Candidate"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+
+    StageInput:
+      type: object
+      required: [stage]
+      properties:
+        stage:
+          type: string
+
+    BulkIdsInput:
+      type: object
+      required: [ids]
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+
+    BulkUpdateInput:
+      type: object
+      required: [ids, updates]
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+        updates:
+          type: object
+          properties:
+            pipelineStage:
+              type: string
+            currentStatus:
+              type: string
+            specialty:
+              type: string
+
+    DuplicateGroup:
+      type: object
+      required: [duplicateKey, candidates]
+      properties:
+        duplicateKey:
+          type: string
+        duplicateType:
+          type: string
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/Candidate"
+
+    DuplicateActionInput:
+      type: object
+      required: [action, targetId]
+      properties:
+        action:
+          type: string
+          enum: [ignore, update, merge]
+        targetId:
+          type: integer
+
+    # NOTES
+    Note:
+      type: object
+      required: [id, candidateId, content, createdAt]
+      properties:
+        id:
+          type: integer
+        candidateId:
+          type: integer
+        content:
+          type: string
+        noteType:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    NoteInput:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+        noteType:
+          type: string
+
+    NoteUpdate:
+      type: object
+      properties:
+        content:
+          type: string
+        noteType:
+          type: string
+
+    # ACTIVITIES
+    Activity:
+      type: object
+      required: [id, type, description, createdAt]
+      properties:
+        id:
+          type: integer
+        candidateId:
+          type: ["integer", "null"]
+        type:
+          type: string
+        description:
+          type: string
+        metadata:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    ActivityInput:
+      type: object
+      required: [type, description]
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        metadata:
+          type: string
+
+    # TAGS
+    Tag:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        color:
+          type: ["string", "null"]
+
+    TagInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        color:
+          type: string
+
+    # PIPELINE
+    PipelineColumn:
+      type: object
+      required: [stage, candidates]
+      properties:
+        stage:
+          type: string
+        label:
+          type: string
+        count:
+          type: integer
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/Candidate"
+
+    # IMPORT
+    ImportInput:
+      type: object
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          items:
+            type: object
+        filename:
+          type: string
+
+    ImportResult:
+      type: object
+      required: [imported, skipped, duplicates, errors]
+      properties:
+        imported:
+          type: integer
+        skipped:
+          type: integer
+        duplicates:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+        importLogId:
+          type: ["integer", "null"]
+
+    ImportLog:
+      type: object
+      required: [id, filename, imported, skipped, duplicates, createdAt]
+      properties:
+        id:
+          type: integer
+        filename:
+          type: string
+        imported:
+          type: integer
+        skipped:
+          type: integer
+        duplicates:
+          type: integer
+        errors:
+          type: ["string", "null"]
+        createdAt:
+          type: string

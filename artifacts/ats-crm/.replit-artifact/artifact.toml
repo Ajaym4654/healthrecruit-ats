@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "HealthRecruit ATS/CRM"
+version = "1.0.0"
+id = "artifacts/ats-crm"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18158
+
+[services.development]
+run = "pnpm --filter @workspace/ats-crm run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ats-crm", "run", "build" ]
+publicDir = "artifacts/ats-crm/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18158"
+BASE_PATH = "/"

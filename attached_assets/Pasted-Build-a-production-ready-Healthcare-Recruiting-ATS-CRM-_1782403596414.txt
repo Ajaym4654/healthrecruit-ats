@@ -1,0 +1,340 @@
+Build a production-ready Healthcare Recruiting ATS/CRM SaaS application with a modern, professional, responsive UI and high-performance architecture capable of handling 500,000+ candidate records.
+
+PRIMARY GOAL:
+Create a complete Applicant Tracking System (ATS) and Candidate Relationship Management (CRM) platform specifically designed for Healthcare Recruiting agencies.
+
+TECH STACK:
+
+Frontend:
+
+Next.js 15
+React
+TypeScript
+Tailwind CSS
+ShadCN UI
+Framer Motion animations
+
+Backend:
+
+Node.js
+Express.js
+TypeScript
+
+Database:
+
+PostgreSQL
+
+Search:
+
+Elasticsearch
+
+Authentication:
+
+JWT Authentication
+Secure Password Hashing
+
+Storage:
+
+Local Storage
+Cloud Storage Ready
+AUTHENTICATION
+
+Create secure authentication:
+
+Admin Login
+Single User Access
+Owner Dashboard
+Change Password
+Session Management
+Logout
+Protected Routes
+Auto Session Expiry
+DASHBOARD
+
+Dashboard cards:
+
+Total Candidates
+New Candidates Today
+Duplicate Records Found
+Resumes Uploaded
+Active Pipeline Candidates
+Recent Activities
+
+Dashboard Charts:
+
+Candidates by Specialty
+Candidates by State
+Pipeline Status Breakdown
+Weekly Candidate Growth
+CANDIDATE DATABASE
+
+Candidate fields:
+
+Full Name
+Phone Number
+Email Address
+City
+State
+Zip Code
+Position
+Specialty
+Experience
+License Type
+License Number
+Preferred Location
+Availability
+Current Status
+Recruiter Notes
+Resume File
+Candidate Source
+Created Date
+Updated Date
+
+Features:
+
+Add Candidate
+Edit Candidate
+Delete Candidate
+Bulk Update
+Bulk Delete
+Candidate Profile Page
+Candidate Activity Timeline
+EXCEL IMPORT SYSTEM
+
+Supported Files:
+
+XLSX
+XLS
+CSV
+
+Upload Options:
+
+Single File Upload
+Multiple File Upload
+Entire Folder Upload
+
+Create a smart import engine.
+
+Automatically detect and map columns.
+
+Name fields:
+
+Name
+Full Name
+Candidate Name
+
+Phone fields:
+
+Phone
+Mobile
+Mobile Number
+Contact Number
+
+Email fields:
+
+Email
+Email Address
+Email ID
+
+City fields:
+
+City
+Location
+
+State fields:
+
+State
+Province
+
+Requirements:
+
+Automatic Column Mapping
+Data Validation
+Import Preview Screen
+Import Logs
+Import Progress Bar
+Background Processing
+DUPLICATE DETECTION ENGINE
+
+Detect duplicates using:
+
+Phone Number
+Email Address
+Name + Phone
+
+Actions:
+
+Ignore Duplicate
+Update Existing Record
+Merge Records
+
+Show duplicate review screen.
+
+RESUME PARSING
+
+Supported:
+
+PDF
+DOC
+DOCX
+
+Automatically extract:
+
+Name
+Phone
+Email
+Skills
+Experience
+Certifications
+Specialty
+Location
+
+Auto-fill candidate profile.
+
+ADVANCED SEARCH
+
+Global search bar.
+
+Search by:
+
+Name
+Phone
+Email
+Position
+Specialty
+City
+State
+Notes
+
+Filters:
+
+RN
+LPN
+CNA
+CT Tech
+MRI Tech
+Respiratory Therapist
+Specialty
+State
+Status
+
+Features:
+
+Saved Searches
+Search Suggestions
+Fast Elasticsearch Results
+PIPELINE MANAGEMENT
+
+Create Kanban Pipeline.
+
+Statuses:
+
+New Lead
+Contacted
+Interested
+Submitted
+Interview
+Offer
+Placed
+Rejected
+
+Drag and Drop support.
+
+CRM FEATURES
+
+Recruiter Notes
+
+Add Notes
+Edit Notes
+Delete Notes
+
+Activity Tracking
+
+Call History
+Email History
+SMS History
+
+Follow Ups
+
+Follow-up Reminders
+Reminder Notifications
+
+Candidate Tags
+
+Examples:
+
+Hot Lead
+ICU
+ER
+Travel Nurse
+Priority
+COMMUNICATION
+
+One-click actions:
+
+Call Candidate
+Send Email
+Send SMS
+
+Communication history tracking.
+
+EXPORT SYSTEM
+
+Export to:
+
+Excel
+CSV
+
+Export:
+
+Selected Candidates
+Search Results
+Entire Database
+PERFORMANCE
+
+Requirements:
+
+Support 500,000+ records
+Pagination
+Lazy Loading
+Background Jobs
+Optimized Queries
+Fast Search
+Caching
+ADMIN FEATURES
+Activity Logs
+Audit Logs
+Backup System
+Restore Backup
+Data Import Logs
+UI / UX
+
+Design a premium ATS UI.
+
+Requirements:
+
+Modern Healthcare Recruiting Theme
+Responsive Design
+Mobile Friendly
+Dark Mode
+Light Mode
+Professional Animations
+Clean Typography
+Fast Loading
+Smooth Transitions
+DELIVERABLES
+
+Generate:
+
+Complete Source Code
+Database Schema
+API Endpoints
+Folder Structure
+Environment Variables
+Installation Guide
+Seed Data
+Docker Configuration
+PostgreSQL Setup
+Production Deployment Guide
+
+The application must be fully functional, production-ready, scalable, and immediately deployable.

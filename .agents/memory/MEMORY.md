@@ -1,0 +1,2 @@
+- [HealthRecruit ATS auth setup](healthrecruit-auth.md) — JWT in localStorage; bcrypt hash must be generated from api-server dir (uses $2b$ prefix)
+- [HealthRecruit pipeline stages](healthrecruit-pipeline.md) — 8 fixed stages; kanban uses HTML5 drag not a DnD library
