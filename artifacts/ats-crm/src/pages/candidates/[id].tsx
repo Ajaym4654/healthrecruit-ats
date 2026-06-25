@@ -225,8 +225,8 @@ export default function CandidateDetailPage() {
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold truncate">{candidate.fullName}</h1>
           <div className="flex flex-wrap items-center gap-2 mt-1">
-            {candidate.specialty && <Badge variant="secondary">{candidate.specialty}</Badge>}
             {candidate.licenseType && <Badge variant="outline">{candidate.licenseType}</Badge>}
+            {candidate.specialty && <Badge variant="secondary">{candidate.specialty}</Badge>}
             {candidateTags.map((t) => (
               <Badge
                 key={t.id}
@@ -268,9 +268,9 @@ export default function CandidateDetailPage() {
                     { icon: Phone, label: "Phone", val: candidate.phone },
                     { icon: Mail, label: "Email", val: candidate.email },
                     { icon: MapPin, label: "Location", val: [candidate.city, candidate.state, candidate.zipCode].filter(Boolean).join(", ") },
-                    { label: "Position", val: candidate.position },
+                    { label: "Position", val: candidate.licenseType },
+                    { label: "Specialty", val: candidate.specialty },
                     { label: "Experience", val: candidate.experience },
-                    { label: "License Type", val: candidate.licenseType },
                     { label: "License Number", val: candidate.licenseNumber },
                     { label: "Preferred Location", val: candidate.preferredLocation },
                     { label: "Availability", val: candidate.availability },
@@ -291,10 +291,9 @@ export default function CandidateDetailPage() {
                     { key: "city", label: "City" },
                     { key: "state", label: "State" },
                     { key: "zipCode", label: "Zip Code" },
-                    { key: "position", label: "Position" },
-                    { key: "specialty", label: "Specialty" },
+                    { key: "licenseType", label: "Position (e.g. RN, LPN, CNA)" },
+                    { key: "specialty", label: "Specialty (e.g. LTC, Med Surg, ICU)" },
                     { key: "experience", label: "Experience" },
-                    { key: "licenseType", label: "License Type" },
                     { key: "licenseNumber", label: "License Number" },
                     { key: "preferredLocation", label: "Preferred Location" },
                     { key: "availability", label: "Availability" },

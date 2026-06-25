@@ -12,15 +12,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
+const POSITIONS = ["RN", "LPN", "CNA", "RT", "CRT", "NP", "PA", "PT", "OT", "SLP", "Rad Tech", "Other"];
+const SPECIALTIES = [
+  "LTC", "Med Surg", "ICU", "PACU", "ER", "OR", "L&D", "NICU", "OB",
+  "Psych", "Rehab", "Tele", "Oncology", "Pediatrics", "Float Pool", "Other",
+];
+
 const schema = z.object({
   fullName: z.string().min(1, "Full name is required"),
-  email: z.string().email().optional().or(z.literal("")),
+  email: z.string().email("Invalid email").optional().or(z.literal("")),
   phone: z.string().optional(),
+  licenseType: z.string().optional(),
   specialty: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
-  licenseType: z.string().optional(),
   experience: z.string().optional(),
+  source: z.string().optional(),
   pipelineStage: z.string().optional(),
 });
 
@@ -35,9 +42,12 @@ export default function NewCandidatePage() {
       fullName: "",
       email: "",
       phone: "",
+      licenseType: "",
       specialty: "",
       city: "",
       state: "",
+      experience: "",
+      source: "",
       pipelineStage: "new_lead",
     },
   });
@@ -49,9 +59,7 @@ export default function NewCandidatePage() {
         queryClient.invalidateQueries({ queryKey: getListCandidatesQueryKey() });
         setLocation(`/candidates/${res.id}`);
       },
-      onError: (err) => {
-        toast.error("Failed to create candidate", { description: err.message });
-      }
+      onError: (err) => toast.error("Failed to create candidate", { description: err.message }),
     });
   };
 
@@ -59,9 +67,7 @@ export default function NewCandidatePage() {
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
-          <Link href="/candidates">
-            <ArrowLeft className="size-4" />
-          </Link>
+          <Link href="/candidates"><ArrowLeft className="size-4" /></Link>
         </Button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Add Candidate</h1>
@@ -70,9 +76,7 @@ export default function NewCandidatePage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Candidate Details</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Candidate Details</CardTitle></CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -83,22 +87,7 @@ export default function NewCandidatePage() {
                   render={({ field }) => (
                     <FormItem className="col-span-2">
                       <FormLabel>Full Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Jane Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="jane@example.com" {...field} />
-                      </FormControl>
+                      <FormControl><Input placeholder="Jane Doe" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -109,13 +98,44 @@ export default function NewCandidatePage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Phone</FormLabel>
-                      <FormControl>
-                        <Input placeholder="(555) 123-4567" {...field} />
-                      </FormControl>
+                      <FormControl><Input placeholder="(555) 123-4567" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl><Input type="email" placeholder="jane@example.com" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Position = license type (RN, LPN, CNA) */}
+                <FormField
+                  control={form.control}
+                  name="licenseType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Position</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {POSITIONS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Specialty = clinical area (LTC, Med Surg, ICU, PACU) */}
                 <FormField
                   control={form.control}
                   name="specialty"
@@ -124,54 +144,24 @@ export default function NewCandidatePage() {
                       <FormLabel>Specialty</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select specialty" />
-                          </SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="Select specialty" /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="RN">RN</SelectItem>
-                          <SelectItem value="LPN">LPN</SelectItem>
-                          <SelectItem value="CNA">CNA</SelectItem>
-                          <SelectItem value="Travel Nurse">Travel Nurse</SelectItem>
-                          <SelectItem value="ICU">ICU</SelectItem>
-                          <SelectItem value="ER">ER</SelectItem>
+                          {SPECIALTIES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                         </SelectContent>
                       </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="pipelineStage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Initial Stage</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select stage" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="new_lead">New Lead</SelectItem>
-                          <SelectItem value="contacted">Contacted</SelectItem>
-                          <SelectItem value="interested">Interested</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
                 <FormField
                   control={form.control}
                   name="city"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>City</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Austin" {...field} />
-                      </FormControl>
+                      <FormControl><Input placeholder="Austin" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -182,9 +172,53 @@ export default function NewCandidatePage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>State</FormLabel>
-                      <FormControl>
-                        <Input placeholder="TX" {...field} />
-                      </FormControl>
+                      <FormControl><Input placeholder="TX" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="experience"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Experience</FormLabel>
+                      <FormControl><Input placeholder="e.g. 3 years" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="source"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Source</FormLabel>
+                      <FormControl><Input placeholder="e.g. Indeed, Referral" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="pipelineStage"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>Initial Stage</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="new_lead">New Lead</SelectItem>
+                          <SelectItem value="contacted">Contacted</SelectItem>
+                          <SelectItem value="interested">Interested</SelectItem>
+                          <SelectItem value="submitted">Submitted</SelectItem>
+                          <SelectItem value="interview">Interview</SelectItem>
+                          <SelectItem value="offer">Offer</SelectItem>
+                          <SelectItem value="placed">Placed</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
