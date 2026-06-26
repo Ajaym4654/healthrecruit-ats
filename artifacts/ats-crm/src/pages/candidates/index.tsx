@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, Trash, FilterX } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Search, Plus, Trash, FilterX, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import * as XLSX from "xlsx";
 
 const POSITIONS = ["RN", "LPN", "CNA", "RT", "CRT", "NP", "PA", "PT", "OT", "SLP", "Rad Tech", "Other"];
 
@@ -26,6 +28,25 @@ const STAGE_LABEL: Record<string, string> = {
   placed: "Placed", rejected: "Rejected",
 };
 
+const EXPORT_COLUMNS = [
+  { key: "fullName",      header: "Full Name" },
+  { key: "email",         header: "Email" },
+  { key: "phone",         header: "Phone" },
+  { key: "licenseType",   header: "Position" },
+  { key: "specialty",     header: "Specialty" },
+  { key: "city",          header: "City" },
+  { key: "state",         header: "State" },
+  { key: "zipCode",       header: "Zip Code" },
+  { key: "pipelineStage", header: "Pipeline Stage" },
+  { key: "status",        header: "Status" },
+  { key: "position",      header: "Job Title" },
+  { key: "yearsExperience", header: "Years Experience" },
+  { key: "currentEmployer", header: "Current Employer" },
+  { key: "linkedinUrl",   header: "LinkedIn" },
+  { key: "notes",         header: "Notes" },
+  { key: "createdAt",     header: "Date Added" },
+];
+
 export default function CandidatesPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -33,6 +54,7 @@ export default function CandidatesPage() {
   const [status, setStatus] = useState<string>("");
   const [pipelineStage, setPipelineStage] = useState<string>("");
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
 
@@ -46,6 +68,75 @@ export default function CandidatesPage() {
   });
 
   const deleteMutation = useBulkDeleteCandidates();
+
+  const fetchAllCandidates = async () => {
+    const token = localStorage.getItem("ats_token");
+    const params = new URLSearchParams({ page: "1", limit: "10000" });
+    if (search) params.set("search", search);
+    if (specialty) params.set("specialty", specialty);
+    if (status) params.set("status", status);
+    if (pipelineStage) params.set("pipelineStage", pipelineStage);
+    const res = await fetch(`/api/candidates?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Failed to fetch candidates");
+    const json = await res.json();
+    return (json.data ?? json) as Record<string, unknown>[];
+  };
+
+  const handleExportCSV = async () => {
+    setIsExporting(true);
+    try {
+      const rows = await fetchAllCandidates();
+      const headers = EXPORT_COLUMNS.map((c) => c.header);
+      const lines = [
+        headers.join(","),
+        ...rows.map((row) =>
+          EXPORT_COLUMNS.map(({ key }) => {
+            const val = row[key] ?? "";
+            const str = String(val).replace(/"/g, '""');
+            return `"${str}"`;
+          }).join(",")
+        ),
+      ];
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `candidates-${format(new Date(), "yyyy-MM-dd")}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${rows.length} candidates to CSV`);
+    } catch (e) {
+      toast.error("Export failed", { description: (e as Error).message });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    setIsExporting(true);
+    try {
+      const rows = await fetchAllCandidates();
+      const sheetData = [
+        EXPORT_COLUMNS.map((c) => c.header),
+        ...rows.map((row) =>
+          EXPORT_COLUMNS.map(({ key }) => row[key] ?? "")
+        ),
+      ];
+      const ws = XLSX.utils.aoa_to_sheet(sheetData);
+      const colWidths = EXPORT_COLUMNS.map(({ header }) => ({ wch: Math.max(header.length + 2, 16) }));
+      ws["!cols"] = colWidths;
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Candidates");
+      XLSX.writeFile(wb, `candidates-${format(new Date(), "yyyy-MM-dd")}.xlsx`);
+      toast.success(`Exported ${rows.length} candidates to Excel`);
+    } catch (e) {
+      toast.error("Export failed", { description: (e as Error).message });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked && data?.data) {
@@ -100,6 +191,24 @@ export default function CandidatesPage() {
               Delete ({selectedIds.length})
             </Button>
           )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" disabled={isExporting}>
+                <Download className="size-4 mr-2" />
+                {isExporting ? "Exporting…" : "Export"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportCSV}>
+                <FileText className="size-4 mr-2" />
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportExcel}>
+                <FileSpreadsheet className="size-4 mr-2" />
+                Export as Excel (.xlsx)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button asChild>
             <Link href="/candidates/new">
               <Plus className="size-4 mr-2" />
