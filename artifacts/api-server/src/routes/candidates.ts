@@ -216,7 +216,7 @@ router.get("/candidates/duplicates", requireAuth, async (_req, res): Promise<voi
 
   const allGroups: any[] = [];
 
-  for (const row of dupesByPhone as any[]) {
+  for (const row of (dupesByPhone as unknown as any[])) {
     const candidates = await db
       .select()
       .from(candidatesTable)
@@ -228,7 +228,7 @@ router.get("/candidates/duplicates", requireAuth, async (_req, res): Promise<voi
     });
   }
 
-  for (const row of dupesByEmail as any[]) {
+  for (const row of (dupesByEmail as unknown as any[])) {
     const candidates = await db
       .select()
       .from(candidatesTable)

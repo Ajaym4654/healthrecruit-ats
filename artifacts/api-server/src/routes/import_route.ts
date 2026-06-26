@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, candidatesTable, importLogsTable, activitiesTable } from "@workspace/db";
 import { eq, or } from "drizzle-orm";
-import { requireAuth } from "./auth";
+import { requireAuth, requireAdmin } from "./auth";
 import { ImportCandidatesBody } from "@workspace/api-zod";
 import { desc } from "drizzle-orm";
 
@@ -172,7 +172,7 @@ function mapRow(rawRow: Record<string, any>): Record<string, any> {
   return mapped;
 }
 
-router.post("/import/candidates", requireAuth, async (req, res): Promise<void> => {
+router.post("/import/candidates", requireAuth, requireAdmin, async (req, res): Promise<void> => {
   const parsed = ImportCandidatesBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -270,7 +270,7 @@ router.post("/import/candidates", requireAuth, async (req, res): Promise<void> =
   });
 });
 
-router.get("/import/logs", requireAuth, async (_req, res): Promise<void> => {
+router.get("/import/logs", requireAuth, requireAdmin, async (_req, res): Promise<void> => {
   const logs = await db.select().from(importLogsTable).orderBy(desc(importLogsTable.createdAt)).limit(50);
   res.json(logs);
 });

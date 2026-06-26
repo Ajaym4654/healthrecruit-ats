@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useListCandidates, getListCandidatesQueryKey, useBulkDeleteCandidates } from "@workspace/api-client-react";
+import { useListCandidates, getListCandidatesQueryKey, useBulkDeleteCandidates, useGetMe } from "@workspace/api-client-react";
 import { Link, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -56,6 +56,7 @@ export default function CandidatesPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { data: me } = useGetMe();
 
   const { data, isLoading } = useListCandidates({
     page,
@@ -190,14 +191,18 @@ export default function CandidatesPage() {
               Delete ({selectedIds.length})
             </Button>
           )}
-          <Button variant="outline" onClick={handleExportCSV} disabled={isExporting}>
-            <FileText className="size-4 mr-2" />
-            CSV
-          </Button>
-          <Button variant="outline" onClick={handleExportExcel} disabled={isExporting}>
-            <FileSpreadsheet className="size-4 mr-2" />
-            Excel
-          </Button>
+          {me?.role === "admin" && (
+            <>
+              <Button variant="outline" onClick={handleExportCSV} disabled={isExporting}>
+                <FileText className="size-4 mr-2" />
+                CSV
+              </Button>
+              <Button variant="outline" onClick={handleExportExcel} disabled={isExporting}>
+                <FileSpreadsheet className="size-4 mr-2" />
+                Excel
+              </Button>
+            </>
+          )}
           <Button asChild>
             <Link href="/candidates/new">
               <Plus className="size-4 mr-2" />

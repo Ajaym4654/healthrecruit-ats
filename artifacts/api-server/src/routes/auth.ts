@@ -24,6 +24,14 @@ export function requireAuth(req: any, res: any, next: any): void {
   }
 }
 
+export function requireAdmin(req: any, res: any, next: any): void {
+  if (!req.user || req.user.role !== "admin") {
+    res.status(403).json({ error: "Admin access required" });
+    return;
+  }
+  next();
+}
+
 router.post("/auth/login", async (req, res): Promise<void> => {
   const { username, password } = req.body;
   if (!username || !password) {

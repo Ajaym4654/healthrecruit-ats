@@ -56,12 +56,14 @@ function AppSidebar() {
     });
   };
 
+  const isAdmin = user?.role === "admin";
+
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
     { icon: Users, label: "Candidates", href: "/candidates" },
     { icon: Trello, label: "Pipeline", href: "/pipeline" },
     { icon: Search, label: "Search", href: "/search" },
-    { icon: Upload, label: "Import", href: "/import" },
+    ...(isAdmin ? [{ icon: Upload, label: "Import", href: "/import" }] : []),
     { icon: Copy, label: "Duplicates", href: "/duplicates" },
   ];
 
