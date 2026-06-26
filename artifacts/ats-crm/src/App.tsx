@@ -17,6 +17,7 @@ import PipelinePage from "@/pages/pipeline";
 import SearchPage from "@/pages/search";
 import ImportPage from "@/pages/import";
 import DuplicatesPage from "@/pages/duplicates";
+import UsersPage from "@/pages/users";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +52,7 @@ function Router() {
         <Route path="/search" component={SearchPage} />
         <Route path="/import" component={ImportPage} />
         <Route path="/duplicates" component={DuplicatesPage} />
+        <Route path="/users" component={UsersPage} />
         <Route path="/login" component={DashboardPage} />
         <Route component={NotFound} />
       </Switch>

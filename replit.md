@@ -52,8 +52,8 @@ A production-ready Healthcare Recruiting ATS/CRM SaaS application for managing h
 
 ## Default Credentials
 
-- Username: `admin`
-- Password: `admin123`
+- Admin — Username: `Ajaym4654` / Password: `Ajju@123`
+- Recruiter — Username: `aryalabh31` / Password: `Lolo@123`
 
 ## User preferences
 

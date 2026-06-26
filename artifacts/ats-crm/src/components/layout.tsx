@@ -20,7 +20,8 @@ import {
   Upload, 
   Copy,
   LogOut,
-  Building
+  Building,
+  UserCog
 } from "lucide-react";
 import { useLogout, useGetMe } from "@workspace/api-client-react";
 
@@ -65,6 +66,7 @@ function AppSidebar() {
     { icon: Search, label: "Search", href: "/search" },
     ...(isAdmin ? [{ icon: Upload, label: "Import", href: "/import" }] : []),
     { icon: Copy, label: "Duplicates", href: "/duplicates" },
+    ...(isAdmin ? [{ icon: UserCog, label: "Users", href: "/users" }] : []),
   ];
 
   return (

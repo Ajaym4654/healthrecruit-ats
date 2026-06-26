@@ -9,6 +9,7 @@ import tagsRouter from "./tags";
 import pipelineRouter from "./pipeline";
 import searchRouter from "./search";
 import importRouter from "./import_route";
+import usersRouter from "./users";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(tagsRouter);
 router.use(pipelineRouter);
 router.use(searchRouter);
 router.use(importRouter);
+router.use(usersRouter);
 
 export default router;
