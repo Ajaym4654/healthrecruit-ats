@@ -85,7 +85,7 @@ export default function PipelinePage() {
         <p className="text-muted-foreground">Drag candidates between stages to update their status.</p>
       </div>
       <div className="flex gap-4 overflow-x-auto pb-4">
-        {(columns ?? []).map((col) => (
+        {(columns ?? []).filter((col) => col.stage !== "new_lead").map((col) => (
           <div
             key={col.stage}
             className="w-64 shrink-0"
