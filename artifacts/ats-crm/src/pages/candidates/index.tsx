@@ -9,8 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, Plus, Trash, FilterX, Download, FileSpreadsheet, FileText } from "lucide-react";
+import { Search, Plus, Trash, FilterX, FileSpreadsheet, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import * as XLSX from "xlsx";
@@ -191,24 +190,14 @@ export default function CandidatesPage() {
               Delete ({selectedIds.length})
             </Button>
           )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" disabled={isExporting}>
-                <Download className="size-4 mr-2" />
-                {isExporting ? "Exporting…" : "Export"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleExportCSV}>
-                <FileText className="size-4 mr-2" />
-                Export as CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExportExcel}>
-                <FileSpreadsheet className="size-4 mr-2" />
-                Export as Excel (.xlsx)
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button variant="outline" onClick={handleExportCSV} disabled={isExporting}>
+            <FileText className="size-4 mr-2" />
+            CSV
+          </Button>
+          <Button variant="outline" onClick={handleExportExcel} disabled={isExporting}>
+            <FileSpreadsheet className="size-4 mr-2" />
+            Excel
+          </Button>
           <Button asChild>
             <Link href="/candidates/new">
               <Plus className="size-4 mr-2" />
