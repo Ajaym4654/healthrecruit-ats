@@ -185,7 +185,7 @@ export default function CandidatesPage() {
           <p className="text-muted-foreground">Manage and filter your healthcare professionals.</p>
         </div>
         <div className="flex gap-2">
-          {selectedIds.length > 0 && (
+          {selectedIds.length > 0 && me?.role === "admin" && (
             <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
               <Trash className="size-4 mr-2" />
               Delete ({selectedIds.length})

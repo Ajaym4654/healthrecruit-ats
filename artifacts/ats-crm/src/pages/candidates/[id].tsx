@@ -17,6 +17,7 @@ import {
   useUpdateCandidateStage,
   getListCandidatesQueryKey,
   useCreateActivity,
+  useGetMe,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";

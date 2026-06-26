@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, candidatesTable, tagsTable, candidateTagsTable, activitiesTable } from "@workspace/db";
 import { eq, ilike, or, sql, and, inArray, desc, asc } from "drizzle-orm";
-import { requireAuth } from "./auth";
+import { requireAuth, requireAdmin } from "./auth";
 import {
   ListCandidatesQueryParams,
   CreateCandidateBody,
@@ -163,7 +163,7 @@ router.post("/candidates", requireAuth, async (req, res): Promise<void> => {
   res.status(201).json({ ...candidate, tags: [] });
 });
 
-router.post("/candidates/bulk-delete", requireAuth, async (req, res): Promise<void> => {
+router.post("/candidates/bulk-delete", requireAuth, requireAdmin, async (req, res): Promise<void> => {
   const parsed = BulkDeleteCandidatesBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -287,7 +287,7 @@ router.patch("/candidates/:id", requireAuth, async (req, res): Promise<void> => 
   res.json(candidate);
 });
 
-router.delete("/candidates/:id", requireAuth, async (req, res): Promise<void> => {
+router.delete("/candidates/:id", requireAuth, requireAdmin, async (req, res): Promise<void> => {
   const params = DeleteCandidateParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
