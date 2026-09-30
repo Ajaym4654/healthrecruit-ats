@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "5njfxyYiP7YZbQlVCogAN"
+uri = "file://attached_assets/HealthRecruit-ATS-CRM-Source.zip"
+type = "unspecified"
+title = "HealthRecruit ATS/CRM source backup"
+description = "ZIP containing the app source, shared libraries, configuration, lockfile, and project assets. Excludes installed dependencies, caches, database contents, secrets, Git history, and internal Replit Agent notes."
+logical_id = "a49669c1-6acb-4482-9af7-55d2113a59e8"
+content_hash = "sha256:55d593252782aa056ed23170577bbd8d3fce0fcdad1a3b2b8b575fcdc8f1ff75"
+size = 431500
+mtime_ms = 1790792951228
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:96255179-5837-4cb2-845c-d423124ad5fd/a49669c1-6acb-4482-9af7-55d2113a59e8/92bef04b-40ce-4e72-876a-b5b58aa8e3cd"
+storage_version_token = "1790792963461895"
+content_type = "application/octet-stream"
