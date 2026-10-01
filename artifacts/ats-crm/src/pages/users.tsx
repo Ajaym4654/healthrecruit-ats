@@ -22,7 +22,7 @@ interface UserRecord {
 
 function authFetch(path: string, opts?: RequestInit) {
   const token = localStorage.getItem("ats_token");
-  return fetch(`/api${path}`, {
+  return fetch(`https://healthrecruit-api.onrender.com/api${path}`, {
     ...opts,
     headers: {
       "Content-Type": "application/json",
