@@ -70,6 +70,18 @@ export default function CandidateDetailPage() {
   const { data: activities } = useListActivities(id, {
     query: { enabled: !!id, queryKey: getListActivitiesQueryKey(id) },
   });
+
+  const latestStageActivity = activities?.find((a) => a.type === "stage_changed");
+  let stageMovedBy = "";
+
+  if (latestStageActivity?.metadata) {
+    try {
+      const metadata = JSON.parse(latestStageActivity.metadata);
+      stageMovedBy = metadata.username || "";
+    } catch {
+      stageMovedBy = "";
+    }
+  }
   const { data: allTags } = useListTags();
 
   const updateMutation = useUpdateCandidate();
@@ -411,6 +423,12 @@ export default function CandidateDetailPage() {
                   ))}
                 </SelectContent>
               </Select>
+
+              {stageMovedBy && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Moved by: <span className="font-medium text-foreground">{stageMovedBy}</span>
+                </p>
+              )}
             </CardContent>
           </Card>
 

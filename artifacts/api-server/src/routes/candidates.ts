@@ -327,6 +327,12 @@ router.patch("/candidates/:id/stage", requireAuth, async (req, res): Promise<voi
     candidateId: updated.id,
     type: "stage_changed",
     description: `Pipeline stage changed to ${parsed.data.stage}`,
+    metadata: JSON.stringify({
+      userId: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
+      stage: parsed.data.stage,
+    }),
   });
 
   const candidate = await getCandidateWithTags(updated.id);
