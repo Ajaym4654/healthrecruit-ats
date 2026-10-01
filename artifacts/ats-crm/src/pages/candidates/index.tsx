@@ -76,7 +76,7 @@ export default function CandidatesPage() {
     if (specialty) params.set("specialty", specialty);
     if (status) params.set("status", status);
     if (pipelineStage) params.set("pipelineStage", pipelineStage);
-    const res = await fetch(`/api/candidates?${params}`, {
+    const res = await fetch(`https://healthrecruit-api.onrender.com/api/candidates?${params}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) throw new Error("Failed to fetch candidates");
