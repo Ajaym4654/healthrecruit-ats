@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { setAuthTokenGetter } from "@workspace/api-client-react";
+import { setAuthTokenGetter, setBaseUrl } from "@workspace/api-client-react";
 
 interface AuthContextType {
   token: string | null;
@@ -17,6 +17,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Configure API client token getter
+    setBaseUrl("https://healthrecruit-api.onrender.com");
     setAuthTokenGetter(() => localStorage.getItem("ats_token"));
   }, []);
 
