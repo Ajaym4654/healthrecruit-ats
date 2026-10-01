@@ -13,6 +13,7 @@ limit?: number;
 search?: string;
 specialty?: string;
 state?: string;
+city?: string;
 status?: string;
 licenseType?: string;
 pipelineStage?: string;

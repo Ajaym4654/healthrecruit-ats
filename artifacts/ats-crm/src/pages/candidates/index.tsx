@@ -49,7 +49,10 @@ const EXPORT_COLUMNS = [
 export default function CandidatesPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [licenseType, setLicenseType] = useState<string>("");
   const [specialty, setSpecialty] = useState<string>("");
+  const [state, setState] = useState<string>("");
+  const [city, setCity] = useState<string>("");
   const [status, setStatus] = useState<string>("");
   const [pipelineStage, setPipelineStage] = useState<string>("");
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -62,7 +65,10 @@ export default function CandidatesPage() {
     page,
     limit: 20,
     search: search || undefined,
+    licenseType: licenseType || undefined,
     specialty: specialty || undefined,
+    state: state || undefined,
+    city: city || undefined,
     status: status || undefined,
     pipelineStage: pipelineStage || undefined,
   });
@@ -73,7 +79,10 @@ export default function CandidatesPage() {
     const token = localStorage.getItem("ats_token");
     const params = new URLSearchParams({ page: "1", limit: "10000" });
     if (search) params.set("search", search);
+    if (licenseType) params.set("licenseType", licenseType);
     if (specialty) params.set("specialty", specialty);
+    if (state) params.set("state", state);
+    if (city) params.set("city", city);
     if (status) params.set("status", status);
     if (pipelineStage) params.set("pipelineStage", pipelineStage);
     const res = await fetch(`https://healthrecruit-api.onrender.com/api/candidates?${params}`, {
@@ -169,13 +178,16 @@ export default function CandidatesPage() {
 
   const clearFilters = () => {
     setSearch("");
+    setLicenseType("");
     setSpecialty("");
+    setState("");
+    setCity("");
     setStatus("");
     setPipelineStage("");
     setPage(1);
   };
 
-  const hasFilters = !!(search || specialty || status || pipelineStage);
+  const hasFilters = !!(search || licenseType || specialty || state || city || status || pipelineStage);
 
   return (
     <div className="space-y-4">
@@ -222,8 +234,9 @@ export default function CandidatesPage() {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
-        <Select value={specialty} onValueChange={(v) => { setSpecialty(v); setPage(1); }}>
-          <SelectTrigger className="w-[160px]">
+
+        <Select value={licenseType} onValueChange={(v) => { setLicenseType(v); setPage(1); }}>
+          <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="All Positions" />
           </SelectTrigger>
           <SelectContent>
@@ -232,8 +245,34 @@ export default function CandidatesPage() {
             ))}
           </SelectContent>
         </Select>
+
+        <Select value={specialty} onValueChange={(v) => { setSpecialty(v); setPage(1); }}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="All Specialties" />
+          </SelectTrigger>
+          <SelectContent>
+            {SPECIALTIES.map((s) => (
+              <SelectItem key={s} value={s}>{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Input
+          placeholder="State"
+          className="w-[120px]"
+          value={state}
+          onChange={(e) => { setState(e.target.value); setPage(1); }}
+        />
+
+        <Input
+          placeholder="City"
+          className="w-[140px]"
+          value={city}
+          onChange={(e) => { setCity(e.target.value); setPage(1); }}
+        />
+
         <Select value={pipelineStage} onValueChange={(v) => { setPipelineStage(v); setPage(1); }}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="All Stages" />
           </SelectTrigger>
           <SelectContent>
@@ -242,6 +281,7 @@ export default function CandidatesPage() {
             ))}
           </SelectContent>
         </Select>
+
         <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="All Statuses" />
@@ -253,6 +293,7 @@ export default function CandidatesPage() {
             <SelectItem value="do_not_contact">Do Not Contact</SelectItem>
           </SelectContent>
         </Select>
+
         {hasFilters && (
           <Button variant="ghost" size="icon" onClick={clearFilters} title="Clear filters">
             <FilterX className="size-4" />

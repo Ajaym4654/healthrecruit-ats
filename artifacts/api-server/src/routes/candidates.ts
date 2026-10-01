@@ -45,6 +45,7 @@ router.get("/candidates", requireAuth, async (req, res): Promise<void> => {
     search,
     specialty,
     state,
+    city,
     status,
     licenseType,
     pipelineStage,

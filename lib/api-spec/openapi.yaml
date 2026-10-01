@@ -240,6 +240,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
         - name: state
           in: query
           schema:

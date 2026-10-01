@@ -150,6 +150,7 @@ export const ListCandidatesQueryParams = zod.object({
   "search": zod.coerce.string().optional(),
   "specialty": zod.coerce.string().optional(),
   "state": zod.coerce.string().optional(),
+  "city": zod.coerce.string().optional(),
   "status": zod.coerce.string().optional(),
   "licenseType": zod.coerce.string().optional(),
   "pipelineStage": zod.coerce.string().optional(),
