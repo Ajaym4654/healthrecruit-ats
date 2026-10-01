@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, Trash, FilterX, FileSpreadsheet, FileText } from "lucide-react";
+import { Search, Plus, Trash, FilterX, FileSpreadsheet, FileText, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import * as XLSX from "xlsx";
@@ -20,6 +20,15 @@ const SPECIALTIES = [
   "LTC", "Med Surg", "ICU", "PACU", "ER", "OR", "L&D", "NICU", "OB",
   "Psych", "Rehab", "Tele", "Oncology", "Pediatrics", "Float Pool", "Other",
 ];
+
+const copyPhone = async (phone: string) => {
+  try {
+    await navigator.clipboard.writeText(phone);
+    toast.success("Phone number copied");
+  } catch {
+    toast.error("Unable to copy phone number");
+  }
+};
 
 const STAGE_LABEL: Record<string, string> = {
   new_lead: "New Lead", contacted: "Contacted", interested: "Interested",
@@ -343,7 +352,22 @@ export default function CandidatesPage() {
                   </TableCell>
                   <TableCell>
                     <div className="font-medium text-primary">{candidate.fullName}</div>
-                    <div className="text-xs text-muted-foreground">{candidate.email || candidate.phone || "—"}</div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      <span>{candidate.phone || "—"}</span>
+                      {candidate.phone && (
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center p-0.5 rounded hover:bg-muted"
+                          title="Copy phone number"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyPhone(candidate.phone!);
+                          }}
+                        >
+                          <Copy className="size-3" />
+                        </button>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     {candidate.licenseType ? (
