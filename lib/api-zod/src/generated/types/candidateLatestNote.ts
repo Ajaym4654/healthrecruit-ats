@@ -6,7 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface NoteUpdate {
+/**
+ * @nullable
+ */
+export type CandidateLatestNote = {
+  id?: number;
+  candidateId?: number;
   content?: string;
-  noteType?: string;
-}
+  createdAt?: string;
+} | null;

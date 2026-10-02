@@ -912,6 +912,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Tag"
+        latestNote:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+            candidateId:
+              type: integer
+            content:
+              type: string
+            createdAt:
+              type: string
         createdAt:
           type: string
         updatedAt:

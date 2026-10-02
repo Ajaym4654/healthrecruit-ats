@@ -9,10 +9,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, Trash, FilterX, FileSpreadsheet, FileText, Copy } from "lucide-react";
+import { Search, Plus, Trash, FilterX, FileSpreadsheet, FileText, Copy, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import * as XLSX from "xlsx";
+
+type CandidateWithLatestNote = {
+  id: number;
+  fullName: string;
+  phone?: string | null;
+  email?: string | null;
+  city?: string | null;
+  state?: string | null;
+  licenseType?: string | null;
+  specialty?: string | null;
+  pipelineStage?: string | null;
+  createdAt: string;
+  latestNote?: {
+    id: number;
+    candidateId: number;
+    content: string;
+    createdAt: string;
+  } | null;
+};
 
 const POSITIONS = ["RN", "LPN", "CNA", "RT", "CRT", "NP", "PA", "PT", "OT", "SLP", "Rad Tech", "Other"];
 
@@ -66,6 +85,9 @@ export default function CandidatesPage() {
   const [pipelineStage, setPipelineStage] = useState<string>("");
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isExporting, setIsExporting] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+  const [noteDraft, setNoteDraft] = useState("");
+  const [savingNoteId, setSavingNoteId] = useState<number | null>(null);
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { data: me } = useGetMe();
@@ -83,6 +105,60 @@ export default function CandidatesPage() {
   });
 
   const deleteMutation = useBulkDeleteCandidates();
+
+  const startEditingNote = (candidateId: number, content: string) => {
+    setEditingNoteId(candidateId);
+    setNoteDraft(content);
+  };
+
+  const cancelEditingNote = () => {
+    setEditingNoteId(null);
+    setNoteDraft("");
+  };
+
+  const saveNote = async (candidateId: number, noteId?: number) => {
+    const content = noteDraft.trim();
+
+    if (!content) {
+      toast.error("Note cannot be empty");
+      return;
+    }
+
+    setSavingNoteId(candidateId);
+
+    try {
+      const token = localStorage.getItem("ats_token");
+      const url = noteId
+        ? `https://healthrecruit-api.onrender.com/api/candidates/${candidateId}/notes/${noteId}`
+        : `https://healthrecruit-api.onrender.com/api/candidates/${candidateId}/notes`;
+
+      const response = await fetch(url, {
+        method: noteId ? "PATCH" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save note");
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: getListCandidatesQueryKey(),
+      });
+
+      toast.success(noteId ? "Note updated" : "Note added");
+      cancelEditingNote();
+    } catch (error) {
+      toast.error("Failed to save note", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setSavingNoteId(null);
+    }
+  };
 
   const fetchAllCandidates = async () => {
     const token = localStorage.getItem("ats_token");
@@ -325,21 +401,23 @@ export default function CandidatesPage() {
               <TableHead>Specialty</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Stage</TableHead>
+              <TableHead>Notes</TableHead>
               <TableHead>Added</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">Loading candidates...</TableCell>
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">Loading candidates...</TableCell>
               </TableRow>
             ) : data?.data?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">No candidates found.</TableCell>
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">No candidates found.</TableCell>
               </TableRow>
             ) : (
-              data?.data?.map((candidate) => (
-                <TableRow
+              data?.data?.map((candidate) => {
+                const candidateWithNote = candidate as typeof candidate & CandidateWithLatestNote;
+                return <TableRow
                   key={candidate.id}
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => setLocation(`/candidates/${candidate.id}`)}
@@ -393,11 +471,69 @@ export default function CandidatesPage() {
                       {STAGE_LABEL[candidate.pipelineStage ?? "new_lead"] ?? candidate.pipelineStage}
                     </Badge>
                   </TableCell>
+                  <TableCell
+                    className="min-w-[260px] max-w-[360px]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {editingNoteId === candidate.id ? (
+                      <div className="flex flex-col gap-2">
+                        <textarea
+                          value={noteDraft}
+                          onChange={(e) => setNoteDraft(e.target.value)}
+                          placeholder="Write a note..."
+                          className="min-h-[70px] w-full rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+                          autoFocus
+                        />
+                        <div className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="h-7 px-2"
+                            disabled={savingNoteId === candidate.id}
+                            onClick={() => saveNote(candidate.id, candidateWithNote.latestNote?.id)}
+                          >
+                            <Check className="mr-1 size-3" />
+                            {savingNoteId === candidate.id ? "Saving..." : "Save"}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2"
+                            disabled={savingNoteId === candidate.id}
+                            onClick={cancelEditingNote}
+                          >
+                            <X className="mr-1 size-3" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="group flex items-start gap-2">
+                        <span className="flex-1 text-sm text-muted-foreground line-clamp-2">
+                          {candidateWithNote.latestNote?.content || "No note"}
+                        </span>
+                        <button
+                          type="button"
+                          title={candidateWithNote.latestNote ? "Edit note" : "Add note"}
+                          className="shrink-0 rounded p-1 opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+                          onClick={() =>
+                            startEditingNote(
+                              candidate.id,
+                              candidateWithNote.latestNote?.content || ""
+                            )
+                          }
+                        >
+                          <Pencil className="size-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {format(new Date(candidate.createdAt), "MMM d, yyyy")}
                   </TableCell>
                 </TableRow>
-              ))
+              })
             )}
           </TableBody>
         </Table>

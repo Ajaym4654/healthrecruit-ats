@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, candidatesTable, tagsTable, candidateTagsTable, activitiesTable } from "@workspace/db";
+import { db, candidatesTable, tagsTable, candidateTagsTable, activitiesTable, notesTable } from "@workspace/db";
 import { eq, ilike, or, sql, and, inArray, desc, asc } from "drizzle-orm";
 import { requireAuth, requireAdmin } from "./auth";
 import {
@@ -95,8 +95,31 @@ router.get("/candidates", requireAuth, async (req, res): Promise<void> => {
 
   const total = totalRow?.count ?? 0;
 
-  // Attach tags for each candidate
   const candidateIds = rows.map((c) => c.id);
+
+  // Attach latest note for each candidate
+  let latestNoteMap: Record<number, any> = {};
+  if (candidateIds.length > 0) {
+    const noteRows = await db
+      .select({
+        id: notesTable.id,
+        candidateId: notesTable.candidateId,
+        content: notesTable.content,
+        createdAt: notesTable.createdAt,
+      })
+      .from(notesTable)
+      .where(inArray(notesTable.candidateId, candidateIds))
+      .orderBy(desc(notesTable.createdAt));
+
+    for (const note of noteRows) {
+      if (!latestNoteMap[note.candidateId]) {
+        latestNoteMap[note.candidateId] = note;
+      }
+    }
+  }
+
+  // Attach tags for each candidate
+  const candidateIdsForTags = candidateIds;
   let tagMap: Record<number, any[]> = {};
   if (candidateIds.length > 0) {
     const tagRows = await db
@@ -108,7 +131,7 @@ router.get("/candidates", requireAuth, async (req, res): Promise<void> => {
       })
       .from(candidateTagsTable)
       .innerJoin(tagsTable, eq(candidateTagsTable.tagId, tagsTable.id))
-      .where(inArray(candidateTagsTable.candidateId, candidateIds));
+      .where(inArray(candidateTagsTable.candidateId, candidateIdsForTags));
 
     for (const t of tagRows) {
       if (!tagMap[t.candidateId]) tagMap[t.candidateId] = [];
@@ -116,7 +139,11 @@ router.get("/candidates", requireAuth, async (req, res): Promise<void> => {
     }
   }
 
-  const data = rows.map((c) => ({ ...c, tags: tagMap[c.id] ?? [] }));
+  const data = rows.map((c) => ({
+    ...c,
+    tags: tagMap[c.id] ?? [],
+    latestNote: latestNoteMap[c.id] ?? null,
+  }));
 
   res.json({
     data,
