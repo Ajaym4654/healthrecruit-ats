@@ -27,7 +27,7 @@ export const LoginBody = zod.object({
 export const LoginResponse = zod.object({
   "token": zod.string(),
   "user": zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "username": zod.string(),
   "role": zod.string()
 })
@@ -47,7 +47,7 @@ export const LogoutResponse = zod.object({
  * @summary Get current user
  */
 export const GetMeResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "username": zod.string(),
   "role": zod.string()
 })
@@ -71,13 +71,13 @@ export const ChangePasswordResponse = zod.object({
  * @summary Get dashboard statistics
  */
 export const GetDashboardStatsResponse = zod.object({
-  "totalCandidates": zod.int(),
-  "newToday": zod.int(),
-  "duplicatesFound": zod.int(),
-  "resumesUploaded": zod.int(),
-  "activePipeline": zod.int(),
-  "totalThisWeek": zod.int().optional(),
-  "totalThisMonth": zod.int().optional()
+  "totalCandidates": zod.number().int(),
+  "newToday": zod.number().int(),
+  "duplicatesFound": zod.number().int(),
+  "resumesUploaded": zod.number().int(),
+  "activePipeline": zod.number().int(),
+  "totalThisWeek": zod.number().int().optional(),
+  "totalThisMonth": zod.number().int().optional()
 })
 
 
@@ -86,7 +86,7 @@ export const GetDashboardStatsResponse = zod.object({
  */
 export const GetSpecialtyBreakdownResponseItem = zod.object({
   "label": zod.string(),
-  "count": zod.int()
+  "count": zod.number().int()
 })
 export const GetSpecialtyBreakdownResponse = zod.array(GetSpecialtyBreakdownResponseItem)
 
@@ -96,7 +96,7 @@ export const GetSpecialtyBreakdownResponse = zod.array(GetSpecialtyBreakdownResp
  */
 export const GetStateBreakdownResponseItem = zod.object({
   "label": zod.string(),
-  "count": zod.int()
+  "count": zod.number().int()
 })
 export const GetStateBreakdownResponse = zod.array(GetStateBreakdownResponseItem)
 
@@ -106,7 +106,7 @@ export const GetStateBreakdownResponse = zod.array(GetStateBreakdownResponseItem
  */
 export const GetPipelineBreakdownResponseItem = zod.object({
   "label": zod.string(),
-  "count": zod.int()
+  "count": zod.number().int()
 })
 export const GetPipelineBreakdownResponse = zod.array(GetPipelineBreakdownResponseItem)
 
@@ -116,7 +116,7 @@ export const GetPipelineBreakdownResponse = zod.array(GetPipelineBreakdownRespon
  */
 export const GetWeeklyGrowthResponseItem = zod.object({
   "week": zod.string(),
-  "count": zod.int(),
+  "count": zod.number().int(),
   "date": zod.string().optional()
 })
 export const GetWeeklyGrowthResponse = zod.array(GetWeeklyGrowthResponseItem)
@@ -126,8 +126,8 @@ export const GetWeeklyGrowthResponse = zod.array(GetWeeklyGrowthResponseItem)
  * @summary Recent activity feed
  */
 export const GetRecentActivityResponseItem = zod.object({
-  "id": zod.int(),
-  "candidateId": zod.int().nullish(),
+  "id": zod.number().int(),
+  "candidateId": zod.number().int().nullish(),
   "type": zod.string(),
   "description": zod.string(),
   "metadata": zod.string().nullish(),
@@ -160,7 +160,7 @@ export const ListCandidatesQueryParams = zod.object({
 
 export const ListCandidatesResponse = zod.object({
   "data": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "fullName": zod.string(),
   "phone": zod.string().nullish(),
   "email": zod.string().nullish(),
@@ -181,23 +181,23 @@ export const ListCandidatesResponse = zod.object({
   "source": zod.string().nullish(),
   "isDuplicate": zod.boolean().optional(),
   "tags": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "color": zod.string().nullish()
 })).optional(),
   "latestNote": zod.object({
-  "id": zod.int().optional(),
-  "candidateId": zod.int().optional(),
+  "id": zod.number().int().optional(),
+  "candidateId": zod.number().int().optional(),
   "content": zod.string().optional(),
   "createdAt": zod.string().optional()
 }).nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })),
-  "total": zod.int(),
-  "page": zod.int(),
-  "limit": zod.int(),
-  "totalPages": zod.int().optional()
+  "total": zod.number().int(),
+  "page": zod.number().int(),
+  "limit": zod.number().int(),
+  "totalPages": zod.number().int().optional()
 })
 
 
@@ -225,7 +225,7 @@ export const CreateCandidateBody = zod.object({
 })
 
 export const CreateCandidateResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "fullName": zod.string(),
   "phone": zod.string().nullish(),
   "email": zod.string().nullish(),
@@ -246,13 +246,13 @@ export const CreateCandidateResponse = zod.object({
   "source": zod.string().nullish(),
   "isDuplicate": zod.boolean().optional(),
   "tags": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "color": zod.string().nullish()
 })).optional(),
   "latestNote": zod.object({
-  "id": zod.int().optional(),
-  "candidateId": zod.int().optional(),
+  "id": zod.number().int().optional(),
+  "candidateId": zod.number().int().optional(),
   "content": zod.string().optional(),
   "createdAt": zod.string().optional()
 }).nullish(),
@@ -265,7 +265,7 @@ export const CreateCandidateResponse = zod.object({
  * @summary Delete multiple candidates
  */
 export const BulkDeleteCandidatesBody = zod.object({
-  "ids": zod.array(zod.int())
+  "ids": zod.array(zod.number().int())
 })
 
 export const BulkDeleteCandidatesResponse = zod.object({
@@ -278,7 +278,7 @@ export const BulkDeleteCandidatesResponse = zod.object({
  * @summary Update multiple candidates
  */
 export const BulkUpdateCandidatesBody = zod.object({
-  "ids": zod.array(zod.int()),
+  "ids": zod.array(zod.number().int()),
   "updates": zod.object({
   "pipelineStage": zod.string().optional(),
   "currentStatus": zod.string().optional(),
@@ -299,7 +299,7 @@ export const GetDuplicateCandidatesResponseItem = zod.object({
   "duplicateKey": zod.string(),
   "duplicateType": zod.string().optional(),
   "candidates": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "fullName": zod.string(),
   "phone": zod.string().nullish(),
   "email": zod.string().nullish(),
@@ -320,13 +320,13 @@ export const GetDuplicateCandidatesResponseItem = zod.object({
   "source": zod.string().nullish(),
   "isDuplicate": zod.boolean().optional(),
   "tags": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "color": zod.string().nullish()
 })).optional(),
   "latestNote": zod.object({
-  "id": zod.int().optional(),
-  "candidateId": zod.int().optional(),
+  "id": zod.number().int().optional(),
+  "candidateId": zod.number().int().optional(),
   "content": zod.string().optional(),
   "createdAt": zod.string().optional()
 }).nullish(),
@@ -345,7 +345,7 @@ export const GetCandidateParams = zod.object({
 })
 
 export const GetCandidateResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "fullName": zod.string(),
   "phone": zod.string().nullish(),
   "email": zod.string().nullish(),
@@ -366,13 +366,13 @@ export const GetCandidateResponse = zod.object({
   "source": zod.string().nullish(),
   "isDuplicate": zod.boolean().optional(),
   "tags": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "color": zod.string().nullish()
 })).optional(),
   "latestNote": zod.object({
-  "id": zod.int().optional(),
-  "candidateId": zod.int().optional(),
+  "id": zod.number().int().optional(),
+  "candidateId": zod.number().int().optional(),
   "content": zod.string().optional(),
   "createdAt": zod.string().optional()
 }).nullish(),
@@ -409,7 +409,7 @@ export const UpdateCandidateBody = zod.object({
 })
 
 export const UpdateCandidateResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "fullName": zod.string(),
   "phone": zod.string().nullish(),
   "email": zod.string().nullish(),
@@ -430,13 +430,13 @@ export const UpdateCandidateResponse = zod.object({
   "source": zod.string().nullish(),
   "isDuplicate": zod.boolean().optional(),
   "tags": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "color": zod.string().nullish()
 })).optional(),
   "latestNote": zod.object({
-  "id": zod.int().optional(),
-  "candidateId": zod.int().optional(),
+  "id": zod.number().int().optional(),
+  "candidateId": zod.number().int().optional(),
   "content": zod.string().optional(),
   "createdAt": zod.string().optional()
 }).nullish(),
@@ -467,7 +467,7 @@ export const UpdateCandidateStageBody = zod.object({
 })
 
 export const UpdateCandidateStageResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "fullName": zod.string(),
   "phone": zod.string().nullish(),
   "email": zod.string().nullish(),
@@ -488,13 +488,13 @@ export const UpdateCandidateStageResponse = zod.object({
   "source": zod.string().nullish(),
   "isDuplicate": zod.boolean().optional(),
   "tags": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "color": zod.string().nullish()
 })).optional(),
   "latestNote": zod.object({
-  "id": zod.int().optional(),
-  "candidateId": zod.int().optional(),
+  "id": zod.number().int().optional(),
+  "candidateId": zod.number().int().optional(),
   "content": zod.string().optional(),
   "createdAt": zod.string().optional()
 }).nullish(),
@@ -512,7 +512,7 @@ export const HandleDuplicateActionParams = zod.object({
 
 export const HandleDuplicateActionBody = zod.object({
   "action": zod.enum(['ignore', 'update', 'merge']),
-  "targetId": zod.int()
+  "targetId": zod.number().int()
 })
 
 export const HandleDuplicateActionResponse = zod.object({
@@ -529,8 +529,8 @@ export const ListNotesParams = zod.object({
 })
 
 export const ListNotesResponseItem = zod.object({
-  "id": zod.int(),
-  "candidateId": zod.int(),
+  "id": zod.number().int(),
+  "candidateId": zod.number().int(),
   "content": zod.string(),
   "noteType": zod.string().nullish(),
   "createdAt": zod.string(),
@@ -552,8 +552,8 @@ export const CreateNoteBody = zod.object({
 })
 
 export const CreateNoteResponse = zod.object({
-  "id": zod.int(),
-  "candidateId": zod.int(),
+  "id": zod.number().int(),
+  "candidateId": zod.number().int(),
   "content": zod.string(),
   "noteType": zod.string().nullish(),
   "createdAt": zod.string(),
@@ -575,8 +575,8 @@ export const UpdateNoteBody = zod.object({
 })
 
 export const UpdateNoteResponse = zod.object({
-  "id": zod.int(),
-  "candidateId": zod.int(),
+  "id": zod.number().int(),
+  "candidateId": zod.number().int(),
   "content": zod.string(),
   "noteType": zod.string().nullish(),
   "createdAt": zod.string(),
@@ -603,8 +603,8 @@ export const ListActivitiesParams = zod.object({
 })
 
 export const ListActivitiesResponseItem = zod.object({
-  "id": zod.int(),
-  "candidateId": zod.int().nullish(),
+  "id": zod.number().int(),
+  "candidateId": zod.number().int().nullish(),
   "type": zod.string(),
   "description": zod.string(),
   "metadata": zod.string().nullish(),
@@ -627,8 +627,8 @@ export const CreateActivityBody = zod.object({
 })
 
 export const CreateActivityResponse = zod.object({
-  "id": zod.int(),
-  "candidateId": zod.int().nullish(),
+  "id": zod.number().int(),
+  "candidateId": zod.number().int().nullish(),
   "type": zod.string(),
   "description": zod.string(),
   "metadata": zod.string().nullish(),
@@ -640,7 +640,7 @@ export const CreateActivityResponse = zod.object({
  * @summary List all available tags
  */
 export const ListTagsResponseItem = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "color": zod.string().nullish()
 })
@@ -660,7 +660,7 @@ export const AddCandidateTagBody = zod.object({
 })
 
 export const AddCandidateTagResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "color": zod.string().nullish()
 })
@@ -683,9 +683,9 @@ export const RemoveCandidateTagResponse = zod.void()
 export const GetPipelineBoardResponseItem = zod.object({
   "stage": zod.string(),
   "label": zod.string().optional(),
-  "count": zod.int().optional(),
+  "count": zod.number().int().optional(),
   "candidates": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "fullName": zod.string(),
   "phone": zod.string().nullish(),
   "email": zod.string().nullish(),
@@ -706,13 +706,13 @@ export const GetPipelineBoardResponseItem = zod.object({
   "source": zod.string().nullish(),
   "isDuplicate": zod.boolean().optional(),
   "tags": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "color": zod.string().nullish()
 })).optional(),
   "latestNote": zod.object({
-  "id": zod.int().optional(),
-  "candidateId": zod.int().optional(),
+  "id": zod.number().int().optional(),
+  "candidateId": zod.number().int().optional(),
   "content": zod.string().optional(),
   "createdAt": zod.string().optional()
 }).nullish(),
@@ -737,7 +737,7 @@ export const SearchCandidatesQueryParams = zod.object({
 
 export const SearchCandidatesResponse = zod.object({
   "data": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "fullName": zod.string(),
   "phone": zod.string().nullish(),
   "email": zod.string().nullish(),
@@ -758,23 +758,23 @@ export const SearchCandidatesResponse = zod.object({
   "source": zod.string().nullish(),
   "isDuplicate": zod.boolean().optional(),
   "tags": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "color": zod.string().nullish()
 })).optional(),
   "latestNote": zod.object({
-  "id": zod.int().optional(),
-  "candidateId": zod.int().optional(),
+  "id": zod.number().int().optional(),
+  "candidateId": zod.number().int().optional(),
   "content": zod.string().optional(),
   "createdAt": zod.string().optional()
 }).nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })),
-  "total": zod.int(),
-  "page": zod.int(),
-  "limit": zod.int(),
-  "totalPages": zod.int().optional()
+  "total": zod.number().int(),
+  "page": zod.number().int(),
+  "limit": zod.number().int(),
+  "totalPages": zod.number().int().optional()
 })
 
 
@@ -782,18 +782,18 @@ export const SearchCandidatesResponse = zod.object({
  * @summary Import candidates from CSV/Excel data
  */
 export const ImportCandidatesBody = zod.object({
-  "rows": zod.array(zod.looseObject({
+  "rows": zod.array(zod.object({
 
-})),
+}).passthrough()),
   "filename": zod.string().optional()
 })
 
 export const ImportCandidatesResponse = zod.object({
-  "imported": zod.int(),
-  "skipped": zod.int(),
-  "duplicates": zod.int(),
+  "imported": zod.number().int(),
+  "skipped": zod.number().int(),
+  "duplicates": zod.number().int(),
   "errors": zod.array(zod.string()),
-  "importLogId": zod.int().nullish()
+  "importLogId": zod.number().int().nullish()
 })
 
 
@@ -801,11 +801,11 @@ export const ImportCandidatesResponse = zod.object({
  * @summary List import logs
  */
 export const ListImportLogsResponseItem = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "filename": zod.string(),
-  "imported": zod.int(),
-  "skipped": zod.int(),
-  "duplicates": zod.int(),
+  "imported": zod.number().int(),
+  "skipped": zod.number().int(),
+  "duplicates": zod.number().int(),
   "errors": zod.string().nullish(),
   "createdAt": zod.string()
 })
