@@ -69,21 +69,58 @@ export default function ImportPage() {
     }
 
     setImporting(true);
-    importMutation.mutate(
-      { data: { rows: rows as any, filename: file.name } },
-      {
-        onSuccess: (data) => {
-          setResult({ imported: data.imported, skipped: data.skipped, duplicates: data.duplicates, errors: data.errors });
-          queryClient.invalidateQueries({ queryKey: getListImportLogsQueryKey() });
-          toast.success(`Imported ${data.imported} candidates`);
-          setFile(null);
-          setPreview([]);
-          setHeaders([]);
-        },
-        onError: () => toast.error("Import failed"),
-        onSettled: () => setImporting(false),
+
+    const BATCH_SIZE = 1000;
+    let totalImported = 0;
+    let totalSkipped = 0;
+    let totalDuplicates = 0;
+    const allErrors: string[] = [];
+
+    try {
+      for (let start = 0; start < rows.length; start += BATCH_SIZE) {
+        const batch = rows.slice(start, start + BATCH_SIZE);
+
+        setResult({
+          imported: totalImported,
+          skipped: totalSkipped,
+          duplicates: totalDuplicates,
+          errors: allErrors,
+        });
+
+        const data = await new Promise<any>((resolve, reject) => {
+          importMutation.mutate(
+            { data: { rows: batch as any, filename: file.name } },
+            {
+              onSuccess: resolve,
+              onError: reject,
+            }
+          );
+        });
+
+        totalImported += data.imported;
+        totalSkipped += data.skipped;
+        totalDuplicates += data.duplicates;
+        allErrors.push(...data.errors);
+
+        setResult({
+          imported: totalImported,
+          skipped: totalSkipped,
+          duplicates: totalDuplicates,
+          errors: allErrors,
+        });
       }
-    );
+
+      await queryClient.invalidateQueries({ queryKey: getListImportLogsQueryKey() });
+
+      toast.success(`Imported ${totalImported} candidates`);
+      setFile(null);
+      setPreview([]);
+      setHeaders([]);
+    } catch (error: any) {
+      toast.error(error?.message || "Import failed");
+    } finally {
+      setImporting(false);
+    }
   }
 
   return (

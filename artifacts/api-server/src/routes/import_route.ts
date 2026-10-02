@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, candidatesTable, importLogsTable, activitiesTable } from "@workspace/db";
-import { eq, or } from "drizzle-orm";
+import { eq, or, inArray } from "drizzle-orm";
 import { requireAuth, requireAdmin } from "./auth";
 import { ImportCandidatesBody } from "@workspace/api-zod";
 import { desc } from "drizzle-orm";
@@ -188,63 +188,104 @@ router.post("/import/candidates", requireAuth, requireAdmin, async (req, res): P
   // Collect sample of what was skipped for debugging
   const skipReasons: string[] = [];
 
-  for (let i = 0; i < rows.length; i++) {
+  const BATCH_SIZE = 500;
+
+  for (let batchStart = 0; batchStart < rows.length; batchStart += BATCH_SIZE) {
+    const batch = rows.slice(batchStart, batchStart + BATCH_SIZE);
+    const valuesToInsert: any[] = [];
+
     try {
-      const mapped = mapRow(rows[i] as Record<string, any>);
+      const mappedRows = batch.map((row, batchIndex) => ({
+        row,
+        mapped: mapRow(row as Record<string, any>),
+        rowNumber: batchStart + batchIndex + 1,
+      }));
 
-      // Require at least a name OR phone OR email
-      const hasIdentifier = !!(mapped.fullName || mapped.phone || mapped.email);
-      if (!hasIdentifier) {
-        skipped++;
-        if (skipReasons.length < 3) {
-          const keys = Object.keys(rows[i] as object).slice(0, 5).join(", ");
-          skipReasons.push(`Row ${i + 1}: no name/phone/email found. Columns: ${keys}`);
+      const validRows = mappedRows.filter(({ mapped, row, rowNumber }) => {
+        const hasIdentifier = !!(mapped.fullName || mapped.phone || mapped.email);
+        if (!hasIdentifier) {
+          skipped++;
+          if (skipReasons.length < 3) {
+            const keys = Object.keys(row as object).slice(0, 5).join(", ");
+            skipReasons.push(`Row ${rowNumber}: no name/phone/email found. Columns: ${keys}`);
+          }
+          return false;
         }
-        continue;
+
+        if (!mapped.fullName) {
+          mapped.fullName = mapped.email || mapped.phone || "Unknown";
+        }
+
+        return true;
+      });
+
+      const phones = validRows.map(({ mapped }) => mapped.phone).filter(Boolean);
+      const emails = validRows.map(({ mapped }) => mapped.email).filter(Boolean);
+
+      const existingConditions = [];
+      if (phones.length > 0) {
+        existingConditions.push(inArray(candidatesTable.phone, phones));
+      }
+      if (emails.length > 0) {
+        existingConditions.push(inArray(candidatesTable.email, emails));
       }
 
-      // If no name, use phone or email as placeholder
-      if (!mapped.fullName) {
-        mapped.fullName = mapped.email || mapped.phone || "Unknown";
-      }
+      const existingRows = existingConditions.length > 0
+        ? await db
+            .select({
+              phone: candidatesTable.phone,
+              email: candidatesTable.email,
+            })
+            .from(candidatesTable)
+            .where(or(...existingConditions))
+        : [];
 
-      // Check for duplicates by phone or email
-      let isDuplicate = false;
-      const conditions = [];
-      if (mapped.phone) conditions.push(eq(candidatesTable.phone, mapped.phone));
-      if (mapped.email) conditions.push(eq(candidatesTable.email, mapped.email));
+      const existingPhones = new Set(
+        existingRows.map((r) => r.phone).filter(Boolean)
+      );
+      const existingEmails = new Set(
+        existingRows.map((r) => r.email).filter(Boolean)
+      );
 
-      if (conditions.length > 0) {
-        const existing = await db
-          .select({ id: candidatesTable.id })
-          .from(candidatesTable)
-          .where(or(...conditions))
-          .limit(1);
-        if (existing.length > 0) {
-          isDuplicate = true;
+      const batchPhones = new Set<string>();
+      const batchEmails = new Set<string>();
+
+      for (const { mapped } of validRows) {
+        const duplicate =
+          (mapped.phone && (existingPhones.has(mapped.phone) || batchPhones.has(mapped.phone))) ||
+          (mapped.email && (existingEmails.has(mapped.email) || batchEmails.has(mapped.email)));
+
+        if (duplicate) {
           duplicates++;
         }
+
+        if (mapped.phone) batchPhones.add(mapped.phone);
+        if (mapped.email) batchEmails.add(mapped.email);
+
+        valuesToInsert.push({
+          fullName: mapped.fullName,
+          phone: mapped.phone ?? null,
+          email: mapped.email ?? null,
+          city: mapped.city ?? null,
+          state: mapped.state ?? null,
+          zipCode: mapped.zipCode ?? null,
+          position: mapped.position ?? null,
+          specialty: mapped.specialty ?? null,
+          experience: mapped.experience ?? null,
+          licenseType: mapped.licenseType ?? null,
+          recruiterNotes: mapped.recruiterNotes ?? null,
+          availability: mapped.availability ?? null,
+          source: mapped.source ?? filename,
+          isDuplicate: !!duplicate,
+        });
       }
 
-      await db.insert(candidatesTable).values({
-        fullName: mapped.fullName,
-        phone: mapped.phone ?? null,
-        email: mapped.email ?? null,
-        city: mapped.city ?? null,
-        state: mapped.state ?? null,
-        zipCode: mapped.zipCode ?? null,
-        position: mapped.position ?? null,
-        specialty: mapped.specialty ?? null,
-        experience: mapped.experience ?? null,
-        licenseType: mapped.licenseType ?? null,
-        recruiterNotes: mapped.recruiterNotes ?? null,
-        availability: mapped.availability ?? null,
-        source: mapped.source ?? filename,
-        isDuplicate,
-      });
-      imported++;
+      if (valuesToInsert.length > 0) {
+        await db.insert(candidatesTable).values(valuesToInsert);
+        imported += valuesToInsert.length;
+      }
     } catch (err: any) {
-      errors.push(`Row ${i + 1}: ${err.message}`);
+      errors.push(`Batch ${batchStart + 1}-${Math.min(batchStart + BATCH_SIZE, rows.length)}: ${err.message}`);
     }
   }
 
