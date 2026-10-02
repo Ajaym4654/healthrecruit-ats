@@ -19,6 +19,11 @@ export default function DashboardPage() {
   const { data: stateData } = useGetStateBreakdown();
   const { data: pipelineData } = useGetPipelineBreakdown();
   const { data: growthData } = useGetWeeklyGrowth();
+
+  const safeSpecialtyData = Array.isArray(specialtyData) ? specialtyData : [];
+  const safeStateData = Array.isArray(stateData) ? stateData : [];
+  const safePipelineData = Array.isArray(pipelineData) ? pipelineData : [];
+  const safeGrowthData = Array.isArray(growthData) ? growthData : [];
   // We'll skip recent activity for brevity or add it if time permits
 
   if (statsLoading) {
@@ -64,9 +69,9 @@ export default function DashboardPage() {
             <CardDescription>Candidates currently across all active stages.</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
-            {pipelineData && pipelineData.length > 0 ? (
+            {safePipelineData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={pipelineData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <BarChart data={safePipelineData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                   <XAxis dataKey="label" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis fontSize={12} tickLine={false} axisLine={false} />
@@ -86,11 +91,11 @@ export default function DashboardPage() {
             <CardDescription>Breakdown by discipline.</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
-             {specialtyData && specialtyData.length > 0 ? (
+             {safeSpecialtyData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={specialtyData}
+                    data={safeSpecialtyData}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -99,7 +104,7 @@ export default function DashboardPage() {
                     dataKey="count"
                     nameKey="label"
                   >
-                    {specialtyData.map((entry, index) => (
+                    {safeSpecialtyData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -119,9 +124,9 @@ export default function DashboardPage() {
             <CardTitle>State Distribution</CardTitle>
           </CardHeader>
           <CardContent className="h-[250px]">
-            {stateData && stateData.length > 0 ? (
+            {safeStateData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stateData.slice(0, 5)} layout="vertical" margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
+                <BarChart data={safeStateData.slice(0, 5)} layout="vertical" margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
                   <XAxis type="number" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis dataKey="label" type="category" fontSize={12} tickLine={false} axisLine={false} />
@@ -140,9 +145,9 @@ export default function DashboardPage() {
             <CardTitle>Candidate Growth</CardTitle>
           </CardHeader>
           <CardContent className="h-[250px]">
-            {growthData && growthData.length > 0 ? (
+            {safeGrowthData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={growthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={safeGrowthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
