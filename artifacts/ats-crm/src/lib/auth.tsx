@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { useLocation } from "wouter";
 import { setAuthTokenGetter, setBaseUrl } from "@workspace/api-client-react";
 
@@ -11,15 +11,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// Configure API client immediately, before any React component/query can run.
+setBaseUrl("https://healthrecruit-api.onrender.com");
+setAuthTokenGetter(() => localStorage.getItem("ats_token"));
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(localStorage.getItem("ats_token"));
   const [, setLocation] = useLocation();
-
-  useEffect(() => {
-    // Configure API client token getter
-    setBaseUrl("https://healthrecruit-api.onrender.com");
-    setAuthTokenGetter(() => localStorage.getItem("ats_token"));
-  }, []);
 
   const login = (newToken: string) => {
     localStorage.setItem("ats_token", newToken);
