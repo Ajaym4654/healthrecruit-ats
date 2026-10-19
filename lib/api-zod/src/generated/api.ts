@@ -820,6 +820,7 @@ export const ListJobsResponseItem = zod.object({
   "jobCode": zod.string().nullish(),
   "title": zod.string(),
   "clientName": zod.string(),
+  "source": zod.string(),
   "location": zod.string().nullish(),
   "specialty": zod.string().nullish(),
   "licenseType": zod.string().nullish(),

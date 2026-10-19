@@ -297,6 +297,8 @@ export interface Job {
   title: string;
   clientName: string;
   /** @nullable */
+  source?: string | null;
+  /** @nullable */
   location?: string | null;
   /** @nullable */
   specialty?: string | null;

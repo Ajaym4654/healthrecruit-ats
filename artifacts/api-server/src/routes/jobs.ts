@@ -22,7 +22,7 @@ import { requireAdmin, requireAuth } from "./auth";
 const router: IRouter = Router();
 
 function normalizeHeader(value: string): string {
-  return value.toLowerCase().trim().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
+  return value.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
 }
 
 function readCell(row: Record<string, unknown>, aliases: string[]): string {
@@ -99,20 +99,34 @@ router.post("/jobs/import", requireAuth, requireAdmin, async (req, res): Promise
 
   for (const [index, rawRow] of parsed.data.rows.entries()) {
     const row = rawRow as Record<string, unknown>;
-    const title = readCell(row, ["job title", "title", "position", "role", "job"]);
+    const unit = readCell(row, ["unit"]);
+    const specialty = readCell(row, ["specialty", "speciality", "department"]) || unit || null;
+    const licenseType = readCell(row, ["license type", "license", "credential", "position type", "type"]) || null;
+    const shift = readCell(row, ["shift"]);
+    const title = readCell(row, ["job title", "title", "position", "role", "job", "requisition title", "req title"])
+      || [unit, licenseType, shift].filter(Boolean).join(" - ")
+      || specialty
+      || readCell(row, ["facility"]);
     const clientName = readCell(row, ["client", "client name", "facility", "account", "customer"]);
+    const sourceText = readCell(row, ["source", "source category", "import source"]).toLowerCase();
+    const source = sourceText === "westways" ? "Westways"
+      : sourceText === "adaptive" ? "Adaptive" : "Others";
     const locationValue = readCell(row, ["location", "work location", "city/state", "city state", "address"]);
     const city = readCell(row, ["city"]);
     const state = readCell(row, ["state", "province"]);
     const location = locationValue || [city, state].filter(Boolean).join(", ") || null;
-    const jobCode = readCell(row, ["job code", "job id", "req id", "requisition id", "reference"]);
-    const openingsText = readCell(row, ["openings", "positions", "number of openings", "headcount"]);
+    const jobCode = readCell(row, ["job code", "job id", "req id", "requisition id", "reference", "contract", "contract number"]);
+    const openingsText = readCell(row, ["openings", "positions", "number of openings", "headcount", "# openings"]);
     const openings = openingsText ? Number(openingsText) : 1;
-    const statusText = readCell(row, ["status", "job status"]).toLowerCase();
-    const specialty = readCell(row, ["specialty", "speciality", "department", "unit"]) || null;
-    const licenseType = readCell(row, ["license type", "license", "credential", "position type"]) || null;
-    const description = readCell(row, ["description", "job description", "details", "notes"]) || null;
-
+    const statusText = readCell(row, ["status", "job status", "req status", "job opening status"]).toLowerCase();
+    const extraDetails = ["shift", "guaranteed hours", "contract rate", "admin fee",
+      "needs available", "non-billable orientation hours", "bill rate", "msp"]
+      .map((key) => {
+        const value = readCell(row, [key]);
+        return value ? `${key}: ${value}` : "";
+      }).filter(Boolean).join("\\n");
+    const description = readCell(row, ["description", "job description", "details", "notes"])
+      || extraDetails || null;
     if (!title || !clientName) {
       skipped++;
       errors.push(`Row ${index + 2}: job title and client are required.`);
@@ -125,7 +139,7 @@ router.post("/jobs/import", requireAuth, requireAdmin, async (req, res): Promise
     }
 
     let status: "open" | "closed" = "open";
-    if (["closed", "filled", "inactive", "cancelled", "canceled"].includes(statusText)) {
+    if (["closed", "filled", "inactive", "cancelled", "canceled", "filled/closed"].includes(statusText)) {
       status = "closed";
     } else if (statusText && !["open", "active", "posted"].includes(statusText)) {
       skipped++;
@@ -133,7 +147,7 @@ router.post("/jobs/import", requireAuth, requireAdmin, async (req, res): Promise
       continue;
     }
 
-    const job = { jobCode: jobCode || null, title, clientName, location };
+    const job = { jobCode: jobCode || null, title, clientName, location, source };
     const key = duplicateKey(job);
     if (seen.has(key)) {
       skipped++;

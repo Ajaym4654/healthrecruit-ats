@@ -36,37 +36,64 @@ const blankJob: JobUpdate = {
 function parseCsv(text: string): Record<string, unknown>[] {
   const records: string[][] = [];
   let row: string[] = [], cell = "", quoted = false;
+
   for (let i = 0; i < text.length; i += 1) {
     const char = text[i];
-    if (char === '"' && quoted && text[i + 1] === '"') { cell += '"'; i += 1; }
-    else if (char === '"') quoted = !quoted;
-    else if (char === "," && !quoted) { row.push(cell.trim()); cell = ""; }
-    else if ((char === "\n" || char === "\r") && !quoted) {
+    if (char === '"' && quoted && text[i + 1] === '"') {
+      cell += '"'; i += 1;
+    } else if (char === '"') {
+      quoted = !quoted;
+    } else if (char === "," && !quoted) {
+      row.push(cell.trim()); cell = "";
+    } else if ((char === "\n" || char === "\r") && !quoted) {
       if (char === "\r" && text[i + 1] === "\n") i += 1;
       row.push(cell.trim()); cell = "";
       if (row.some((value) => value.length)) records.push(row);
       row = [];
-    } else cell += char;
+    } else {
+      cell += char;
+    }
   }
+
   row.push(cell.trim());
   if (row.some((value) => value.length)) records.push(row);
   if (records.length < 2) return [];
+
   const aliases: Record<string, string> = {
-    code: "jobCode", jobcode: "jobCode", title: "title", jobtitle: "title",
-    client: "clientName", clientname: "clientName", location: "location",
-    specialty: "specialty", licensetype: "licenseType", openings: "openings",
-    description: "description", status: "status",
+    code: "jobCode", jobcode: "jobCode", jobid: "jobCode",
+    reqid: "jobCode", requisitionid: "jobCode", contract: "jobCode",
+    contractnumber: "jobCode", reference: "jobCode",
+    title: "title", jobtitle: "title", position: "title",
+    role: "title", job: "title", requisitiontitle: "title",
+    reqtitle: "title",
+    client: "clientName", clientname: "clientName", account: "clientName",
+    customer: "clientName", facility: "clientName",
+    location: "location", worklocation: "location",
+    citystate: "location", address: "location",
+    specialty: "specialty", speciality: "specialty",
+    department: "specialty", unit: "specialty",
+    licensetype: "licenseType", license: "licenseType",
+    credential: "licenseType", positiontype: "licenseType", type: "licenseType",
+    openings: "openings", positions: "openings",
+    numberofopenings: "openings", headcount: "openings",
+    description: "description", jobdescription: "description",
+    details: "description", notes: "description",
+    status: "status", jobstatus: "status", reqstatus: "status",
+    jobopeningstatus: "status",
   };
+
   const headers = records[0].map((header) => {
-    const normalized = header.trim().replace(/^\uFEFF/, "").toLowerCase().replace(/[\s_-]+/g, "");
+    const normalized = header.replace(/^\uFEFF/, "").toLowerCase().replace(/[^a-z0-9]/g, "");
     return aliases[normalized] ?? normalized;
   });
-  return records.slice(1).map((values) => Object.fromEntries(headers.map((header, index) => [
-    header,
-    header === "openings" && values[index] ? Number(values[index]) : values[index] ?? "",
-  ])));
-}
 
+  return records.slice(1).map((values) => Object.fromEntries(
+    headers.map((header, index) => [
+      header,
+      header === "openings" && values[index] ? Number(values[index]) : values[index] ?? "",
+    ]),
+  ));
+}
 function Field({ label, value, onChange, testId, type = "text", required = false }: {
   label: string; value: string | number; onChange: (value: string) => void;
   testId: string; type?: string; required?: boolean;
@@ -107,10 +134,9 @@ export default function JobsPage() {
   const candidates = candidateResponse?.data ?? [];
   const submittedIds = useMemo(() => new Set((submissions ?? []).map((item) => item.candidateId)), [submissions]);
   const filteredJobs = useMemo(() => jobs.filter((job) => {
-    const clientName = job.clientName.trim().toLowerCase();
-    const matchesClient = client === "Others"
-      ? clientName !== "westways" && clientName !== "adaptive"
-      : clientName === client.toLowerCase();
+    const source = (job.source || (["westways", "adaptive"].includes(job.clientName.trim().toLowerCase())
+      ? job.clientName : "Others")).trim().toLowerCase();
+    const matchesClient = source === client.toLowerCase();
     const needle = search.trim().toLowerCase();
     const matchesSearch = !needle || [job.title, job.jobCode, job.location, job.specialty, job.licenseType]
       .some((value) => value?.toLowerCase().includes(needle));
@@ -160,7 +186,7 @@ export default function JobsPage() {
   };
   const runImport = () => {
     if (!importRows.length) return;
-    importJobs.mutate({ data: { filename: importName, rows: importRows } }, {
+    importJobs.mutate({ data: { filename: importName, rows: importRows.map((row) => ({ ...row, source: client })) } }, {
       onSuccess: async (result) => {
         await invalidateJobs();
         toast.success(`${result.imported} jobs imported`, { description: `${result.skipped} skipped${result.errors?.length ? ` · ${result.errors.length} issues` : ""}` });
@@ -209,8 +235,8 @@ export default function JobsPage() {
       {[
         { label: "Open roles", value: jobs.filter((job) => job.status === "open").length, icon: BriefcaseBusiness, tone: "text-primary bg-primary/10" },
         { label: "Active openings", value: activeOpenings, icon: Users, tone: "text-[#b36b41] bg-[#b36b41]/10" },
-        { label: "Westways", value: jobs.filter((job) => job.clientName === "Westways").length, icon: Building2, tone: "text-[#567b9b] bg-[#567b9b]/10" },
-        { label: "Adaptive", value: jobs.filter((job) => job.clientName === "Adaptive").length, icon: Activity, tone: "text-[#907b3a] bg-[#907b3a]/10" },
+        { label: "Westways", value: jobs.filter((job) => (job.source || job.clientName) === "Westways").length, icon: Building2, tone: "text-[#567b9b] bg-[#567b9b]/10" },
+        { label: "Adaptive", value: jobs.filter((job) => (job.source || job.clientName) === "Adaptive").length, icon: Activity, tone: "text-[#907b3a] bg-[#907b3a]/10" },
       ].map(({ label, value, icon: Icon, tone }) => <Card key={label} className="flex items-center gap-3 border-card-border bg-card px-4 py-3.5 shadow-[0_1px_2px_hsl(30_20%_20%/.04)]" data-testid={`metric-${label.toLowerCase().replace(" ", "-")}`}>
         <div className={`grid size-9 place-items-center rounded-md ${tone}`}><Icon className="size-4" /></div>
         <div><div className="font-data text-xl font-semibold leading-none">{value}</div><div className="mt-1 text-[11px] font-medium text-muted-foreground">{label}</div></div>

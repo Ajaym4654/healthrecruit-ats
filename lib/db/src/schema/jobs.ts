@@ -9,6 +9,7 @@ export const jobsTable = pgTable("jobs", {
   jobCode: text("job_code"),
   title: text("title").notNull(),
   clientName: text("client_name").notNull(),
+  source: text("source").notNull().default("Others"),
   location: text("location"),
   specialty: text("specialty"),
   licenseType: text("license_type"),
