@@ -35,6 +35,13 @@ const blankJob: JobUpdate = {
 
 function parseCsv(text: string): Record<string, unknown>[] {
   const records: string[][] = [];
+  const firstLine = text.split(/\r?\n/, 1)[0] ?? "";
+  const delimiters = [",", "\t", ";", "|"];
+  const delimiter = delimiters.reduce(
+    (best, current) =>
+      firstLine.split(current).length > firstLine.split(best).length ? current : best,
+    ",",
+  );
   let row: string[] = [], cell = "", quoted = false;
 
   for (let i = 0; i < text.length; i += 1) {
@@ -43,7 +50,7 @@ function parseCsv(text: string): Record<string, unknown>[] {
       cell += '"'; i += 1;
     } else if (char === '"') {
       quoted = !quoted;
-    } else if (char === "," && !quoted) {
+    } else if (char === delimiter && !quoted) {
       row.push(cell.trim()); cell = "";
     } else if ((char === "\n" || char === "\r") && !quoted) {
       if (char === "\r" && text[i + 1] === "\n") i += 1;
