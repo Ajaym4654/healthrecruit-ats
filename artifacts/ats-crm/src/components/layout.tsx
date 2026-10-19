@@ -21,7 +21,8 @@ import {
   Copy,
   LogOut,
   Building,
-  UserCog
+  UserCog,
+  BriefcaseBusiness,
 } from "lucide-react";
 import { useLogout, useGetMe } from "@workspace/api-client-react";
 
@@ -62,6 +63,7 @@ function AppSidebar() {
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
     { icon: Users, label: "Candidates", href: "/candidates" },
+    { icon: BriefcaseBusiness, label: "Jobs", href: "/jobs" },
     { icon: Trello, label: "Pipeline", href: "/pipeline" },
     { icon: Search, label: "Search", href: "/search" },
     ...(isAdmin ? [{ icon: Upload, label: "Import", href: "/import" }] : []),

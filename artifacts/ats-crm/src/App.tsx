@@ -18,6 +18,7 @@ import SearchPage from "@/pages/search";
 import ImportPage from "@/pages/import";
 import DuplicatesPage from "@/pages/duplicates";
 import UsersPage from "@/pages/users";
+import JobsPage from "@/pages/jobs";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,6 +54,7 @@ function Router() {
         <Route path="/import" component={ImportPage} />
         <Route path="/duplicates" component={DuplicatesPage} />
         <Route path="/users" component={UsersPage} />
+        <Route path="/jobs" component={JobsPage} />
         <Route path="/login" component={DashboardPage} />
         <Route component={NotFound} />
       </Switch>

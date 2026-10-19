@@ -10,6 +10,7 @@ import pipelineRouter from "./pipeline";
 import searchRouter from "./search";
 import importRouter from "./import_route";
 import usersRouter from "./users";
+import jobsRouter from "./jobs";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(pipelineRouter);
 router.use(searchRouter);
 router.use(importRouter);
 router.use(usersRouter);
+router.use(jobsRouter);
 
 export default router;

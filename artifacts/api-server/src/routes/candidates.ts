@@ -326,7 +326,7 @@ router.delete("/candidates/:id", requireAuth, requireAdmin, async (req, res): Pr
   res.sendStatus(204);
 });
 
-router.patch("/candidates/:id/stage", requireAuth, async (req, res): Promise<void> => {
+router.patch("/candidates/:id/stage", requireAuth, async (req: any, res): Promise<void> => {
   const params = UpdateCandidateStageParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
