@@ -86,7 +86,7 @@ export default function CandidateDetailPage() {
     if (!token || !id) return;
     setDocumentsLoading(true);
     try {
-      const response = await fetch(`/api/candidates/${id}/documents`, {
+      const response = await fetch(`https://healthrecruit-api.onrender.com/api/candidates/${id}/documents`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Could not load documents");
@@ -111,7 +111,7 @@ export default function CandidateDetailPage() {
     const token = localStorage.getItem("ats_token");
     setDocumentBusy(true);
     try {
-      const response = await fetch(`/api/candidates/${id}/documents`, {
+      const response = await fetch(`https://healthrecruit-api.onrender.com/api/candidates/${id}/documents`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -131,7 +131,7 @@ export default function CandidateDetailPage() {
   async function openDocument(doc: any, preview: boolean) {
     const token = localStorage.getItem("ats_token");
     try {
-      const response = await fetch(`/api/candidates/${id}/documents/${doc.id}${preview ? "?preview=1" : ""}`, {
+      const response = await fetch(`https://healthrecruit-api.onrender.com/api/candidates/${id}/documents/${doc.id}${preview ? "?preview=1" : ""}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Could not open document");
@@ -158,7 +158,7 @@ export default function CandidateDetailPage() {
     if (!window.confirm(`Delete "${doc.fileName}"? This cannot be undone.`)) return;
     const token = localStorage.getItem("ats_token");
     try {
-      const response = await fetch(`/api/candidates/${id}/documents/${doc.id}`, {
+      const response = await fetch(`https://healthrecruit-api.onrender.com/api/candidates/${id}/documents/${doc.id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
