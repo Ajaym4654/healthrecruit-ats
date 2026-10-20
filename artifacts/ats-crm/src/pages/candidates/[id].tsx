@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import {
   useGetCandidate,
@@ -31,9 +31,24 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { 
-  ArrowLeft, Phone, Mail, MapPin, Edit, Save, X, Trash2, 
-  Plus, Clock, Tag, Activity, StickyNote
+import {
+  ArrowLeft,
+  Phone,
+  Mail,
+  MapPin,
+  Edit,
+  Save,
+  X,
+  Trash2,
+  Plus,
+  Clock,
+  Tag,
+  Activity,
+  StickyNote,
+  FileText,
+  Upload,
+  Download,
+  Eye
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -59,6 +74,107 @@ export default function CandidateDetailPage() {
   const [, params] = useRoute("/candidates/:id");
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentType, setDocumentType] = useState("Other");
+  const [documentBusy, setDocumentBusy] = useState(false);
+  const [documentPreview, setDocumentPreview] = useState<{url: string; mimeType: string; fileName: string} | null>(null);
+
+  async function loadDocuments() {
+    const token = localStorage.getItem("ats_token");
+    if (!token || !id) return;
+    setDocumentsLoading(true);
+    try {
+      const response = await fetch(`/api/candidates/${id}/documents`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Could not load documents");
+      setDocuments(await response.json());
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not load documents");
+    } finally {
+      setDocumentsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void loadDocuments();
+  }, [params?.id]);
+
+  async function handleDocumentUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = event.currentTarget.files;
+    if (!files?.length) return;
+    const formData = new FormData();
+    Array.from(files).forEach(file => formData.append("files", file));
+    formData.append("documentType", documentType);
+    const token = localStorage.getItem("ats_token");
+    setDocumentBusy(true);
+    try {
+      const response = await fetch(`/api/candidates/${id}/documents`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Upload failed");
+      toast.success(`${files.length} document(s) uploaded`);
+      await loadDocuments();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Upload failed");
+    } finally {
+      setDocumentBusy(false);
+      event.currentTarget.value = "";
+    }
+  }
+
+  async function openDocument(doc: any, preview: boolean) {
+    const token = localStorage.getItem("ats_token");
+    try {
+      const response = await fetch(`/api/candidates/${id}/documents/${doc.id}${preview ? "?preview=1" : ""}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Could not open document");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      if (preview && (doc.mimeType === "application/pdf" || doc.mimeType?.startsWith("image/"))) {
+        setDocumentPreview(old => {
+          if (old) URL.revokeObjectURL(old.url);
+          return { url, mimeType: doc.mimeType, fileName: doc.fileName };
+        });
+      } else {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = doc.fileName;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not open document");
+    }
+  }
+
+  async function deleteDocument(doc: any) {
+    if (!window.confirm(`Delete "${doc.fileName}"? This cannot be undone.`)) return;
+    const token = localStorage.getItem("ats_token");
+    try {
+      const response = await fetch(`/api/candidates/${id}/documents/${doc.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Delete failed");
+      if (documentPreview?.fileName === doc.fileName) {
+        if (documentPreview?.url) URL.revokeObjectURL(documentPreview.url);
+        setDocumentPreview(null);
+      }
+      toast.success("Document deleted");
+      await loadDocuments();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Delete failed");
+    }
+  }
+
   const id = parseInt(params?.id ?? "0", 10);
 
   const { data: candidate, isLoading } = useGetCandidate(id, {
@@ -321,6 +437,91 @@ export default function CandidateDetailPage() {
                       />
                     </div>
                   ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+
+          {/* Document management */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <FileText className="size-4" /> Documents ({documents.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  value={documentType}
+                  onChange={e => setDocumentType(e.target.value)}
+                  className="h-9 rounded-md border bg-background px-3 text-sm"
+                  aria-label="Document type"
+                >
+                  {["Other", "Resume", "Nursing License", "BLS", "ACLS", "PALS", "COVID", "Driver's License", "ID", "Certifications", "Physical", "TB Test", "Drug Test"].map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+                <label className={`inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground cursor-pointer ${documentBusy ? "opacity-50 pointer-events-none" : ""}`}>
+                  <Upload className="size-4" />
+                  {documentBusy ? "Uploading..." : "Upload files"}
+                  <input
+                    type="file"
+                    multiple
+                    className="hidden"
+                    disabled={documentBusy}
+                    onChange={handleDocumentUpload}
+                  />
+                </label>
+                <span className="text-xs text-muted-foreground">Up to 10 files per upload, 15 MB each</span>
+              </div>
+
+              {documentsLoading ? (
+                <p className="text-sm text-muted-foreground">Loading documents...</p>
+              ) : documents.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-3">No documents uploaded yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {documents.map((doc: any) => (
+                    <div key={doc.id} className="flex items-center gap-3 rounded-lg border p-3">
+                      <FileText className="size-5 shrink-0 text-muted-foreground" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium break-words">{doc.fileName}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {doc.documentType} · {(doc.fileSize / 1024 / 1024).toFixed(2)} MB
+                          {doc.createdAt ? ` · ${format(new Date(doc.createdAt), "MMM d, yyyy")}` : ""}
+                        </p>
+                      </div>
+                      {(doc.mimeType === "application/pdf" || doc.mimeType?.startsWith("image/")) && (
+                        <Button variant="outline" size="sm" onClick={() => openDocument(doc, true)} title="Preview">
+                          <Eye className="size-4" />
+                        </Button>
+                      )}
+                      <Button variant="outline" size="sm" onClick={() => openDocument(doc, false)} title="Download">
+                        <Download className="size-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => deleteDocument(doc)} title="Delete">
+                        <Trash2 className="size-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {documentPreview && (
+                <div className="rounded-lg border p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium truncate">{documentPreview.fileName}</p>
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      if (documentPreview?.url) URL.revokeObjectURL(documentPreview.url);
+                      setDocumentPreview(null);
+                    }}><X className="size-4" /> Close preview</Button>
+                  </div>
+                  {documentPreview.mimeType === "application/pdf" ? (
+                    <iframe title="Document preview" src={documentPreview.url} className="w-full h-[420px] rounded-md" />
+                  ) : (
+                    <img src={documentPreview.url} alt={documentPreview.fileName} className="max-h-[420px] max-w-full mx-auto object-contain rounded-md" />
+                  )}
                 </div>
               )}
             </CardContent>

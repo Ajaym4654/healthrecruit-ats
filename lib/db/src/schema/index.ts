@@ -5,3 +5,5 @@ export * from "./activities";
 export * from "./tags";
 export * from "./import_logs";
 export * from "./jobs";
+
+export * from "./candidate_documents";

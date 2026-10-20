@@ -11,6 +11,7 @@ import searchRouter from "./search";
 import importRouter from "./import_route";
 import usersRouter from "./users";
 import jobsRouter from "./jobs";
+import documentsRouter from "./documents";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(searchRouter);
 router.use(importRouter);
 router.use(usersRouter);
 router.use(jobsRouter);
+router.use(documentsRouter);
 
 export default router;
