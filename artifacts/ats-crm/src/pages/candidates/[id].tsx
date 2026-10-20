@@ -458,7 +458,7 @@ export default function CandidateDetailPage() {
                   className="h-9 rounded-md border bg-background px-3 text-sm"
                   aria-label="Document type"
                 >
-                  {["Other", "Resume", "Nursing License", "BLS", "ACLS", "PALS", "COVID", "Driver's License", "ID", "Certifications", "Physical", "TB Test", "Drug Test"].map(type => (
+                  {["Other", "Resume", "Nursing License", "BLS", "ACLS", "PALS", "COVID", "Driver's License", "ID", "Certifications", "Physical", "TB Test", "Drug Test", "Skill Checklist", "Cover Sheet"].map(type => (
                     <option key={type} value={type}>{type}</option>
                   ))}
                 </select>
