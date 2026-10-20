@@ -373,10 +373,10 @@ export default function JobsPage() {
                         <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#dbe7e1] text-[11px] font-bold text-primary">{candidate.fullName.split(/\s+/).map((part) => part[0]).slice(0, 2).join("")}</span>
                         <div className="min-w-0"><div className="truncate text-xs font-semibold">{candidate.fullName}</div><div className="truncate text-[10px] text-muted-foreground">{candidate.specialty || candidate.licenseType || candidate.email || "Candidate"}</div></div>
                       </div>
-                      {isAdmin && <Button size="sm" variant={alreadySubmitted ? "secondary" : "outline"} disabled={!isAdmin || alreadySubmitted || submitCandidate.isPending} onClick={() => submitToJob(candidate.id)}
+                      <Button size="sm" variant={alreadySubmitted ? "secondary" : "outline"} disabled={!isAdmin || alreadySubmitted || submitCandidate.isPending} onClick={() => submitToJob(candidate.id)}
                         className="h-7 shrink-0 gap-1 px-2.5 text-[10px]" data-testid={`button-submit-candidate-${candidate.id}`}>
                         {alreadySubmitted ? <><Check className="size-3" />Submitted</> : "Submit"}
-                      </Button>}
+                      </Button>
                     </div>;
                   })}
                 {!candidatesLoading && candidates.length === 0 && <p className="py-3 text-center text-xs text-muted-foreground">No candidates available.</p>}

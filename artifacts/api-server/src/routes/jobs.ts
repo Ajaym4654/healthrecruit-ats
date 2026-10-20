@@ -241,7 +241,7 @@ router.get("/jobs/:id/submissions", requireAuth, async (req, res): Promise<void>
   res.json(submissions);
 });
 
-router.post("/jobs/:id/submissions", requireAuth, requireAdmin, async (req: any, res): Promise<void> => {
+router.post("/jobs/:id/submissions", requireAuth, async (req: any, res): Promise<void> => {
   const params = SubmitCandidateToJobParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
