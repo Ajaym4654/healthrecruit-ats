@@ -19,6 +19,7 @@ import ImportPage from "@/pages/import";
 import DuplicatesPage from "@/pages/duplicates";
 import UsersPage from "@/pages/users";
 import JobsPage from "@/pages/jobs";
+import SkillChecklistPage from "@/pages/skill-checklist";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,6 +56,7 @@ function Router() {
         <Route path="/duplicates" component={DuplicatesPage} />
         <Route path="/users" component={UsersPage} />
         <Route path="/jobs" component={JobsPage} />
+        <Route path="/skill-checklist" component={SkillChecklistPage} />
         <Route path="/login" component={DashboardPage} />
         <Route component={NotFound} />
       </Switch>

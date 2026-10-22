@@ -7,3 +7,5 @@ export * from "./import_logs";
 export * from "./jobs";
 
 export * from "./candidate_documents";
+
+export * from "./skill_checklists";

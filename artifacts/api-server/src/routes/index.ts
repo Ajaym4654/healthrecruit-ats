@@ -12,6 +12,7 @@ import importRouter from "./import_route";
 import usersRouter from "./users";
 import jobsRouter from "./jobs";
 import documentsRouter from "./documents";
+import skillChecklistsRouter from "./skill_checklists";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(importRouter);
 router.use(usersRouter);
 router.use(jobsRouter);
 router.use(documentsRouter);
+router.use(skillChecklistsRouter);
 
 export default router;
