@@ -876,7 +876,7 @@
                     showToast("Please log in to HealthRecruit Admin first.", "error");
                     return;
                 }
-                const response = await fetch("https://healthrecruit-api.onrender.com/skill-checklists", {
+                const response = await fetch("https://healthrecruit-api.onrender.com/api/skill-checklists", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
