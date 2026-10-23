@@ -641,7 +641,8 @@
         let activeCategoryFilter = 'all';
         let currentSubmissions = JSON.parse(localStorage.getItem('nova_submissions') || '[]');
         let activeReviewSubmission = null;
-        const candidateToken = new URLSearchParams(window.location.search).get('candidateToken');
+        const checklistParams = new URLSearchParams(window.location.search);
+        const candidateToken = checklistParams.get('candidateToken') || checklistParams.get('request');
 
         window.onload = async function() {
             document.getElementById('cand_date').value = new Date().toISOString().split('T')[0];

@@ -3,6 +3,7 @@ import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 export const checklistRequestsTable = pgTable("checklist_requests", {
   id: serial("id").primaryKey(),
   tokenHash: text("token_hash").notNull().unique(),
+  shortCode: text("short_code").unique(),
   jobId: text("job_id").notNull(),
   jobTitle: text("job_title").notNull(),
   recipientEmail: text("recipient_email"),

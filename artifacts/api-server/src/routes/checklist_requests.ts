@@ -25,10 +25,20 @@ function validToken(token: string): boolean {
   return /^[a-f0-9]{64}$/.test(token);
 }
 
-function candidateLink(token: string): string {
+function validIdentifier(value: string): boolean {
+  return validToken(value) || /^[A-Za-z0-9_-]{12}$/.test(value);
+}
+
+function requestCondition(identifier: string) {
+  return validToken(identifier)
+    ? eq(checklistRequestsTable.tokenHash, hashToken(identifier))
+    : eq(checklistRequestsTable.shortCode, identifier);
+}
+
+function candidateLink(shortCode: string): string {
   const base = (process.env.FRONTEND_URL || "https://healthrecruit-app.onrender.com")
     .replace(/\/+$/, "");
-  return `${base}/skill-checklist.html?candidateToken=${encodeURIComponent(token)}`;
+  return `${base}/skill-checklist.html?request=${encodeURIComponent(shortCode)}`;
 }
 
 // Admin: create a per-job share link, or send it using configured Resend email.
@@ -55,10 +65,12 @@ router.post("/skill-checklist-requests", requireAuth, requireAdmin, async (req: 
 
     const rawToken = randomBytes(32).toString("hex");
     const tokenHash = hashToken(rawToken);
+    const shortCode = randomBytes(9).toString("base64url");
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     await db.insert(checklistRequestsTable).values({
       tokenHash,
+      shortCode,
       jobId,
       jobTitle,
       recipientEmail: email || null,
@@ -66,7 +78,7 @@ router.post("/skill-checklist-requests", requireAuth, requireAdmin, async (req: 
       expiresAt,
     });
 
-    const link = candidateLink(rawToken);
+    const link = candidateLink(shortCode);
 
     if (email) {
       const mailResponse = await fetch("https://api.resend.com/emails", {
@@ -107,7 +119,7 @@ router.post("/skill-checklist-requests", requireAuth, requireAdmin, async (req: 
 router.get("/public/skill-checklists/:token", async (req, res) => {
   try {
     const token = String(req.params.token || "");
-    if (!validToken(token)) {
+    if (!validIdentifier(token)) {
       res.status(404).json({ error: "This checklist link is invalid or expired." });
       return;
     }
@@ -117,7 +129,7 @@ router.get("/public/skill-checklists/:token", async (req, res) => {
       jobId: checklistRequestsTable.jobId,
       jobTitle: checklistRequestsTable.jobTitle,
     }).from(checklistRequestsTable).where(and(
-      eq(checklistRequestsTable.tokenHash, hashToken(token)),
+      requestCondition(token),
       gt(checklistRequestsTable.expiresAt, now),
       isNull(checklistRequestsTable.submittedAt),
     ));
@@ -142,7 +154,7 @@ router.post("/public/skill-checklists/:token", async (req: any, res) => {
     const token = String(req.params.token || "");
     const data = req.body?.submissionData;
 
-    if (!validToken(token) || !data || typeof data !== "object" || Array.isArray(data)) {
+    if (!validIdentifier(token) || !data || typeof data !== "object" || Array.isArray(data)) {
       res.status(400).json({ error: "Invalid checklist submission" });
       return;
     }
@@ -162,7 +174,7 @@ router.post("/public/skill-checklists/:token", async (req: any, res) => {
       const [claimed] = await tx.update(checklistRequestsTable)
         .set({ submittedAt: now })
         .where(and(
-          eq(checklistRequestsTable.tokenHash, hashToken(token)),
+          requestCondition(token),
           eq(checklistRequestsTable.jobId, jobId),
           eq(checklistRequestsTable.jobTitle, jobTitle),
           gt(checklistRequestsTable.expiresAt, now),
