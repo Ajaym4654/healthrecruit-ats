@@ -1178,19 +1178,64 @@
             document.getElementById('adminModal').classList.add('hidden');
         }
 
-        function verifyAdminPin() {
+        async function verifyAdminPin() {
             const pin = document.getElementById('adminPinInput').value;
-            if(pin === '1234') {
+            if (pin !== '1234') {
+                showToast("Invalid Admin PIN.", "error");
+                return;
+            }
+
+            const token = localStorage.getItem('ats_token');
+            if (!token) {
+                showToast("Please log in with an admin account first.", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    'https://healthrecruit-api.onrender.com/api/skill-checklists',
+                    {
+                        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
+                        cache: 'no-store'
+                    }
+                );
+
+                if (response.status === 401 || response.status === 403) {
+                    showToast("Admin access required. Recruiters cannot view submissions.", "error");
+                    return;
+                }
+                if (!response.ok) throw new Error("Could not load checklist submissions.");
+
+                const rows = await response.json();
+                const details = await Promise.all(rows.map(async row => {
+                    const detailResponse = await fetch(
+                        `https://healthrecruit-api.onrender.com/api/skill-checklists/${encodeURIComponent(row.id)}`,
+                        {
+                            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
+                            cache: 'no-store'
+                        }
+                    );
+                    if (!detailResponse.ok) throw new Error("Could not load a checklist submission.");
+                    const saved = await detailResponse.json();
+                    const data = saved.submissionData || {};
+                    return {
+                        ...data,
+                        id: saved.id,
+                        submittedAt: saved.submittedAt || data.submittedAt || row.submittedAt
+                    };
+                }));
+
+                currentSubmissions = details;
+                renderAdminTable();
                 closeAdminModal();
                 document.getElementById('view-job-selection').classList.add('hidden');
                 document.getElementById('view-checklist-form').classList.add('hidden');
                 document.getElementById('portal-admin').classList.remove('hidden');
-                
                 document.getElementById('tab-admin-btn').className = "px-3 py-1.5 rounded-md text-sm font-medium bg-nova-700 text-white hover:bg-nova-600 transition";
                 document.getElementById('tab-jobs-btn').className = "px-3 py-1.5 rounded-md text-sm font-medium bg-slate-800 text-slate-200 hover:bg-slate-700 transition";
-                showToast("Admin access granted", "success");
-            } else {
-                showToast("Invalid Admin PIN. Use 1234.", "error");
+                showToast(`Loaded ${details.length} saved checklist(s).`, "success");
+            } catch (error) {
+                showToast(error.message || "Could not load saved checklists.", "error");
             }
         }
 
