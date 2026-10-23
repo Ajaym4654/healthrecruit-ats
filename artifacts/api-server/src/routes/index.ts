@@ -13,6 +13,7 @@ import usersRouter from "./users";
 import jobsRouter from "./jobs";
 import documentsRouter from "./documents";
 import skillChecklistsRouter from "./skill_checklists";
+import checklistRequestsRouter from "./checklist_requests";
 
 const router: IRouter = Router();
 
@@ -30,5 +31,6 @@ router.use(usersRouter);
 router.use(jobsRouter);
 router.use(documentsRouter);
 router.use(skillChecklistsRouter);
+router.use(checklistRequestsRouter);
 
 export default router;

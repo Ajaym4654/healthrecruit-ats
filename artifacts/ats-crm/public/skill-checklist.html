@@ -641,12 +641,95 @@
         let activeCategoryFilter = 'all';
         let currentSubmissions = JSON.parse(localStorage.getItem('nova_submissions') || '[]');
         let activeReviewSubmission = null;
+        const candidateToken = new URLSearchParams(window.location.search).get('candidateToken');
 
-        window.onload = function() {
+        window.onload = async function() {
             document.getElementById('cand_date').value = new Date().toISOString().split('T')[0];
             renderJobCatalog();
             renderAdminTable();
+            if (candidateToken) await initializeCandidateMode();
         };
+
+        async function initializeCandidateMode() {
+            // Hide all admin/navigation controls in candidate mode.
+            document.querySelectorAll('header button').forEach(button => button.classList.add('hidden'));
+            const brand = document.querySelector('header .cursor-pointer');
+            if (brand) {
+                brand.onclick = null;
+                brand.classList.remove('cursor-pointer');
+            }
+            document.getElementById('portal-admin').classList.add('hidden');
+            document.getElementById('view-job-selection').classList.add('hidden');
+            document.querySelectorAll('#view-checklist-form button[onclick="showJobSelectionView()"]')
+                .forEach(button => button.classList.add('hidden'));
+
+            try {
+                const response = await fetch(
+                    `https://healthrecruit-api.onrender.com/api/public/skill-checklists/${encodeURIComponent(candidateToken)}`,
+                    { headers: { 'Accept': 'application/json' }, cache: 'no-store' }
+                );
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(result.error || 'This checklist link is invalid or expired.');
+
+                const job = JOBS_DATABASE.find(item => item.id === result.jobId);
+                if (!job) throw new Error('The job attached to this checklist is unavailable.');
+
+                selectJobAndOpenForm(job.id);
+                document.getElementById('view-job-selection').classList.add('hidden');
+                document.querySelectorAll('#view-checklist-form button[onclick="showJobSelectionView()"]')
+                    .forEach(button => button.classList.add('hidden'));
+                document.getElementById('form-header-title').textContent = 'Candidate Skill Checklist';
+            } catch (error) {
+                document.getElementById('view-checklist-form').classList.add('hidden');
+                document.getElementById('view-job-selection').classList.remove('hidden');
+                document.getElementById('view-job-selection').innerHTML =
+                    '<div class="bg-white rounded-xl border p-8 text-center"><h2 class="text-xl font-bold text-red-700">Checklist link unavailable</h2><p class="mt-2 text-slate-600"></p></div>';
+                document.querySelector('#view-job-selection p').textContent =
+                    error.message || 'Please contact your recruiter for a new link.';
+            }
+        }
+
+        async function requestChecklistLink(jobId, sendEmail) {
+            const authToken = localStorage.getItem('ats_token');
+            if (!authToken) {
+                showToast('Please log in to the HealthRecruit admin first.', 'error');
+                return;
+            }
+
+            let email = '';
+            if (sendEmail) {
+                email = prompt('Enter the candidate email address:');
+                if (email === null) return;
+                email = email.trim();
+                if (!email) {
+                    showToast('Candidate email is required.', 'error');
+                    return;
+                }
+            }
+
+            try {
+                const response = await fetch('https://healthrecruit-api.onrender.com/api/skill-checklist-requests', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ jobId, ...(sendEmail ? { email } : {}) }),
+                    cache: 'no-store'
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(result.error || 'Could not create checklist link.');
+
+                if (sendEmail) {
+                    showToast('Checklist request email sent successfully.', 'success');
+                } else {
+                    await navigator.clipboard.writeText(result.link);
+                    showToast('Secure checklist link copied. Expires in 7 days.', 'success');
+                }
+            } catch (error) {
+                showToast(error.message || 'Could not create checklist request.', 'error');
+            }
+        }
 
         // RENDER LANDING PAGE CATALOG CARDS
         function renderJobCatalog() {
@@ -691,6 +774,15 @@
                         <span>Fill Checklist</span>
                         <i class="fa-solid fa-chevron-right text-[10px]"></i>
                     </button>
+                    ${!candidateToken && localStorage.getItem('ats_token') ? `
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="requestChecklistLink('${job.id}', false)" class="px-2 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100">
+                            <i class="fa-solid fa-link mr-1"></i> Copy Link
+                        </button>
+                        <button onclick="requestChecklistLink('${job.id}', true)" class="px-2 py-2 border border-blue-200 rounded-lg text-xs font-semibold text-blue-800 hover:bg-blue-50">
+                            <i class="fa-solid fa-envelope mr-1"></i> Email Request
+                        </button>
+                    </div>` : ''}
                 </div>
             `).join('');
         }
@@ -871,6 +963,29 @@
             };
 
             try {
+                if (candidateToken) {
+                    const response = await fetch(
+                        `https://healthrecruit-api.onrender.com/api/public/skill-checklists/${encodeURIComponent(candidateToken)}`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ submissionData }),
+                            cache: 'no-store'
+                        }
+                    );
+                    const result = await response.json().catch(() => ({}));
+                    if (!response.ok) throw new Error(result.error || 'Checklist could not be saved.');
+
+                    document.getElementById('skillsForm').querySelectorAll('input, button, textarea, select')
+                        .forEach(element => element.disabled = true);
+                    showToast('Checklist submitted successfully. You may close this page.', 'success');
+                    const success = document.createElement('div');
+                    success.className = 'm-4 p-4 rounded-lg border border-green-200 bg-green-50 text-green-900 font-semibold';
+                    success.textContent = 'Your checklist has been submitted successfully. You may close this page.';
+                    document.getElementById('view-checklist-form').prepend(success);
+                    return;
+                }
+
                 const token = localStorage.getItem("ats_token");
                 if (!token) {
                     showToast("Please log in to HealthRecruit Admin first.", "error");
