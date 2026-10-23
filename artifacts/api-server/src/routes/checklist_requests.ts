@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { randomBytes, createHash } from "node:crypto";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { db, checklistRequestsTable, skillChecklistsTable } from "@workspace/db";
-import { requireAuth, requireAdmin } from "./auth";
+import { requireAuth, requireAdminOrRecruiter } from "./auth";
 
 const router: IRouter = Router();
 const JOBS: Record<string, string> = {
@@ -42,7 +42,7 @@ function candidateLink(shortCode: string): string {
 }
 
 // Admin: create a per-job share link, or send it using configured Resend email.
-router.post("/skill-checklist-requests", requireAuth, requireAdmin, async (req: any, res) => {
+router.post("/skill-checklist-requests", requireAuth, requireAdminOrRecruiter, async (req: any, res) => {
   try {
     const jobId = String(req.body?.jobId || "");
     const jobTitle = JOBS[jobId];

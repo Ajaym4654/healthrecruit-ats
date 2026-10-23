@@ -32,6 +32,14 @@ export function requireAdmin(req: any, res: any, next: any): void {
   next();
 }
 
+export function requireAdminOrRecruiter(req: any, res: any, next: any): void {
+  if (!req.user || !["admin", "recruiter"].includes(String(req.user.role).toLowerCase())) {
+    res.status(403).json({ error: "Admin or recruiter access required" });
+    return;
+  }
+  next();
+}
+
 router.post("/auth/login", async (req, res): Promise<void> => {
   const { username, password } = req.body;
   if (!username || !password) {

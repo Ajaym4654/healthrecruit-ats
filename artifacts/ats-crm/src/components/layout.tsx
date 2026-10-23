@@ -67,7 +67,8 @@ function AppSidebar() {
     { icon: BriefcaseBusiness, label: "Jobs", href: "/jobs" },
     { icon: Trello, label: "Pipeline", href: "/pipeline" },
     { icon: Search, label: "Search", href: "/search" },
-    ...(isAdmin ? [{ icon: Upload, label: "Import", href: "/import" }, { icon: ClipboardCheck, label: "Skill Checklist", href: "/skill-checklist" }] : []),
+    ...(isAdmin ? [{ icon: Upload, label: "Import", href: "/import" }] : []),
+    { icon: ClipboardCheck, label: "Skill Checklist", href: "/skill-checklist" },
     { icon: Copy, label: "Duplicates", href: "/duplicates" },
     ...(isAdmin ? [{ icon: UserCog, label: "Users", href: "/users" }] : []),
   ];
