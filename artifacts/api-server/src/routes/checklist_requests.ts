@@ -97,8 +97,23 @@ router.post("/skill-checklist-requests", requireAuth, requireAdmin, async (req: 
       });
 
       if (!mailResponse.ok) {
-        await db.delete(checklistRequestsTable).where(eq(checklistRequestsTable.tokenHash, tokenHash));
-        res.status(502).json({ error: "Email provider could not send the request. Please check email configuration." });
+        const providerError = await mailResponse.text();
+
+        req.log?.error(
+          {
+            status: mailResponse.status,
+            providerError,
+          },
+          "Resend rejected checklist request email"
+        );
+
+        await db.delete(checklistRequestsTable).where(
+          eq(checklistRequestsTable.tokenHash, tokenHash)
+        );
+
+        res.status(502).json({
+          error: "Email provider could not send the request. Please check email configuration.",
+        });
         return;
       }
 
