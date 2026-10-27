@@ -83,6 +83,7 @@ router.get("/skill-checklist-configs", async (req: any, res) => {
     res.setHeader("Cache-Control", "no-store");
     res.json(rows);
   } catch (error) {
+    console.error("[skill-checklist-configs] Load failed:", error);
     req.log?.error(error);
     res.status(500).json({ error: "Could not load skill configurations" });
   }
@@ -133,6 +134,7 @@ router.put("/skill-checklist-configs/:jobId", requireAuth, requireAdmin, async (
     res.setHeader("Cache-Control", "no-store");
     res.json(saved);
   } catch (error) {
+    console.error("[skill-checklist-configs] Save failed:", error);
     req.log?.error(error);
     res.status(500).json({ error: "Could not save skill configuration" });
   }
