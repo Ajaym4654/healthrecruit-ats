@@ -10,3 +10,5 @@ export * from "./candidate_documents";
 
 export * from "./skill_checklists";
 export * from "./checklist_requests";
+
+export * from "./skill_checklist_configs";

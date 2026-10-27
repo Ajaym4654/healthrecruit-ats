@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
-import { skillChecklistsTable } from "@workspace/db";
+import { skillChecklistsTable, skillChecklistConfigsTable } from "@workspace/db";
 import { desc, eq } from "drizzle-orm";
 import { requireAuth, requireAdmin } from "./auth";
 
@@ -72,6 +72,69 @@ router.post("/skill-checklists", requireAuth, requireAdmin, async (req: any, res
   } catch (error) {
     req.log?.error(error);
     res.status(500).json({ error: "Could not save checklist submission" });
+  }
+});
+
+
+// Skill lists are readable by checklist pages; only admins may change them.
+router.get("/skill-checklist-configs", async (req: any, res) => {
+  try {
+    const rows = await db.select().from(skillChecklistConfigsTable);
+    res.setHeader("Cache-Control", "no-store");
+    res.json(rows);
+  } catch (error) {
+    req.log?.error(error);
+    res.status(500).json({ error: "Could not load skill configurations" });
+  }
+});
+
+router.put("/skill-checklist-configs/:jobId", requireAuth, requireAdmin, async (req: any, res) => {
+  try {
+    const jobId = String(req.params.jobId || "");
+    const { jobTitle, category, skills } = req.body ?? {};
+
+    if (!/^[a-z0-9-]{1,100}$/.test(jobId)) {
+      res.status(400).json({ error: "Invalid role ID" });
+      return;
+    }
+    if (typeof jobTitle !== "string" || !jobTitle.trim() || jobTitle.length > 200) {
+      res.status(400).json({ error: "Valid jobTitle is required" });
+      return;
+    }
+    if (!["nursing", "allied", "clinical"].includes(category)) {
+      res.status(400).json({ error: "Invalid role category" });
+      return;
+    }
+    if (!Array.isArray(skills) || skills.length > 150 ||
+        skills.some((skill: unknown) => typeof skill !== "string" || !skill.trim() || skill.length > 250)) {
+      res.status(400).json({ error: "Skills must be a list of up to 150 non-empty strings" });
+      return;
+    }
+
+    const cleanSkills = [...new Set(skills.map((skill: string) => skill.trim()))];
+    const [saved] = await db.insert(skillChecklistConfigsTable).values({
+      jobId,
+      jobTitle: jobTitle.trim(),
+      category,
+      skills: cleanSkills,
+      updatedBy: String(req.user?.username || "").slice(0, 150),
+      updatedAt: new Date(),
+    }).onConflictDoUpdate({
+      target: skillChecklistConfigsTable.jobId,
+      set: {
+        jobTitle: jobTitle.trim(),
+        category,
+        skills: cleanSkills,
+        updatedBy: String(req.user?.username || "").slice(0, 150),
+        updatedAt: new Date(),
+      },
+    }).returning();
+
+    res.setHeader("Cache-Control", "no-store");
+    res.json(saved);
+  } catch (error) {
+    req.log?.error(error);
+    res.status(500).json({ error: "Could not save skill configuration" });
   }
 });
 
