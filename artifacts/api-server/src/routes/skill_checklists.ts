@@ -106,13 +106,13 @@ router.put("/skill-checklist-configs/:jobId", requireAuth, requireAdmin, async (
       res.status(400).json({ error: "Invalid role category" });
       return;
     }
-    if (!Array.isArray(skills) || skills.length > 150 ||
-        skills.some((skill: unknown) => typeof skill !== "string" || !skill.trim() || skill.length > 250)) {
-      res.status(400).json({ error: "Skills must be a list of up to 150 non-empty strings" });
+    if (!Array.isArray(skills) || skills.some((skill: unknown) => typeof skill !== "string")) {
+      res.status(400).json({ error: "Skills must be provided as text entries" });
       return;
     }
 
-    const cleanSkills = [...new Set(skills.map((skill: string) => skill.trim()))];
+    // Preserve every supplied entry exactly; no count, character, or duplicate limits.
+    const cleanSkills = skills as string[];
     const [saved] = await db.insert(skillChecklistConfigsTable).values({
       jobId,
       jobTitle: jobTitle.trim(),
