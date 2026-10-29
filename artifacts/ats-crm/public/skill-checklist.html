@@ -449,7 +449,7 @@
             </div>
 
             <!-- Modal Printable Canvas Body -->
-            <div id="printable-pdf-content" class="p-6 sm:p-8 overflow-y-auto bg-white text-slate-800 space-y-6 text-xs">
+            <div id="printable-pdf-content" class="p-6 sm:p-8 bg-white text-slate-800 space-y-6 text-xs" style="overflow:visible; height:auto; max-height:none;">
                 <!-- Dynamically populated filled report -->
             </div>
         </div>
@@ -1628,17 +1628,75 @@
             document.getElementById('reviewPdfModal').classList.add('hidden');
         }
 
-        function downloadCurrentModalPdf() {
-            if(!activeReviewSubmission) return;
+        async function downloadCurrentModalPdf() {
+            if (!activeReviewSubmission) return;
+
             const element = document.getElementById('printable-pdf-content');
-            const opt = {
-                margin:       0.3,
-                filename:     `Checklist_${activeReviewSubmission.candidate.fullName.replace(/\s+/g, '_')}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            const button = document.querySelector('#reviewPdfModal button[onclick="downloadCurrentModalPdf()"]');
+            if (!element || typeof html2pdf === 'undefined') {
+                showToast("PDF generator is unavailable. Please refresh and try again.", "error");
+                return;
+            }
+
+            const oldButtonText = button ? button.innerHTML : "";
+            const oldStyles = {
+                height: element.style.height,
+                maxHeight: element.style.maxHeight,
+                overflow: element.style.overflow,
+                width: element.style.width,
+                boxSizing: element.style.boxSizing
             };
-            html2pdf().set(opt).from(element).save();
+
+            try {
+                if (button) {
+                    button.disabled = true;
+                    button.textContent = "Preparing PDF...";
+                }
+
+                // Capture the entire report, not just the visible scroll area.
+                element.style.height = "auto";
+                element.style.maxHeight = "none";
+                element.style.overflow = "visible";
+                element.style.width = "100%";
+                element.style.boxSizing = "border-box";
+
+                await new Promise(resolve => requestAnimationFrame(() =>
+                    requestAnimationFrame(resolve)
+                ));
+
+                const filename = `Checklist_${(activeReviewSubmission.candidate.fullName || 'Candidate').replace(/[^a-z0-9_-]+/gi, '_')}.pdf`;
+
+                await html2pdf().set({
+                    margin: [0.35, 0.35, 0.4, 0.35],
+                    filename,
+                    image: { type: "jpeg", quality: 0.98 },
+                    html2canvas: {
+                        scale: 1.5,
+                        useCORS: true,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: Math.max(document.documentElement.clientWidth, element.scrollWidth),
+                        height: element.scrollHeight,
+                        backgroundColor: "#ffffff"
+                    },
+                    jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+                    pagebreak: {
+                        mode: ["css", "legacy"],
+                        avoid: ["h1", "h2", "h3", ".rounded", "button"]
+                    }
+                }).from(element).save();
+
+                showToast("Full checklist PDF downloaded.", "success");
+            } catch (error) {
+                console.error("Checklist PDF download failed:", error);
+                showToast("PDF download failed. Please try again.", "error");
+            } finally {
+                Object.assign(element.style, oldStyles);
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = oldButtonText;
+                }
+            }
         }
 
         function renderAdminTable() {
