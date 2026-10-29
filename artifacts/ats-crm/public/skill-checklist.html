@@ -39,8 +39,18 @@
         /* Two column layout with divider */
         .skills-grid-two-col {
             display: grid;
-            grid-template-columns: 1fr 1px 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1.25rem;
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+        .skills-grid-two-col > div {
+            min-width: 0;
+            max-width: 100%;
+        }
+        .skills-grid-two-col > div.space-y-4 {
+            overflow-wrap: anywhere;
         }
         .skill-divider {
             background-color: #cbd5e1;
@@ -50,10 +60,11 @@
 
         @media (max-width: 768px) {
             .skills-grid-two-col {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 0.75rem;
             }
-            .skill-divider {
-                display: none;
+            .skills-grid-two-col > div {
+                min-width: 0;
             }
         }
 
@@ -92,9 +103,6 @@
                 </button>
                 <button onclick="openAdminModal()" id="tab-admin-btn" class="px-3 py-1.5 rounded-md text-sm font-medium bg-slate-800 text-slate-200 hover:bg-slate-700 transition">
                     <i class="fa-solid fa-lock mr-1"></i> Admin Portal
-                </button>
-                <button onclick="downloadSourceZip()" class="px-3 py-1.5 rounded-md text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-500 transition shadow">
-                    <i class="fa-solid fa-file-zipper mr-1"></i> Download Code (ZIP)
                 </button>
             </div>
         </div>
@@ -192,6 +200,8 @@
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number *</label>
                                 <input type="tel" id="cand_phone" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-nova-600 outline-none" placeholder="(555) 000-0000">
+                                <label class="block text-xs font-semibold text-slate-700 mb-1 mt-3">Emergency Contact Number</label>
+                                <input type="tel" id="cand_emergency_phone" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-nova-600 outline-none" placeholder="Emergency contact phone number">
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Full Address *</label>
@@ -431,7 +441,7 @@
 
     <!-- FULL DETAILED REVIEW & PDF PRINT MODAL -->
     <div id="reviewPdfModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-6 overflow-y-auto">
-        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full my-auto overflow-hidden flex flex-col max-h-[95vh]">
+        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full my-auto overflow-hidden flex flex-col h-[95vh] max-h-[95vh]">
             <!-- Modal Header -->
             <div class="bg-slate-800 p-4 text-white flex items-center justify-between no-print">
                 <div class="flex items-center space-x-2">
@@ -449,7 +459,7 @@
             </div>
 
             <!-- Modal Printable Canvas Body -->
-            <div id="printable-pdf-content" class="p-6 sm:p-8 bg-white text-slate-800 space-y-6 text-xs" style="overflow:visible; height:auto; max-height:none;">
+            <div id="printable-pdf-content" class="p-6 sm:p-8 bg-white text-slate-800 space-y-6 text-xs flex-1 min-h-0 overflow-y-auto" style="height:auto; max-height:none;">
                 <!-- Dynamically populated filled report -->
             </div>
         </div>
@@ -1350,18 +1360,22 @@
                 .filter(item => !item.name.startsWith('## '));
             const midIndex = Math.ceil(competencies.length / 2);
             const columns = [competencies.slice(0, midIndex), competencies.slice(midIndex)];
+            const sectionAt = [];
+            let activeSection = 'Skills';
+            skills.forEach((name, index) => {
+                if (name.startsWith('## ')) activeSection = name.slice(3).trim() || 'Skills';
+                sectionAt[index] = activeSection;
+            });
 
-            let html = `<div class="skills-grid-two-col bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-200">`;
+            let html = `<div class="skills-grid-two-col bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-200" style="display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:1rem;width:100%;min-width:0;box-sizing:border-box;">`;
             columns.forEach((column, colIndex) => {
-                if (colIndex === 1) html += `<div class="skill-divider hidden md:block"></div>`;
-                html += `<div class="space-y-4">`;
+                html += `<div class="space-y-4 min-w-0 ${colIndex === 1 ? 'md:border-l md:pl-5 border-slate-300' : ''}">`;
                 let previousSection = '';
                 column.forEach(item => {
                     const originalPosition = item.originalIndex;
-                    const section = skills.slice(0, originalPosition + 1)
-                        .filter(name => name.startsWith('## ')).pop() || '';
+                    const section = sectionAt[originalPosition] || 'Skills';
                     if (section !== previousSection) {
-                        html += `<h3 class="text-sm font-bold uppercase tracking-wide text-slate-700 border-b border-slate-300 pb-2 pt-3">${section ? section.slice(3) : 'Skills'}</h3>`;
+                        html += `<h3 class="text-sm font-bold uppercase tracking-wide text-slate-700 border-b border-slate-300 pb-2 pt-3">${section || 'Skills'}</h3>`;
                         previousSection = section;
                     }
                     currentRatings[originalPosition] = 0;
@@ -1427,6 +1441,7 @@
                     fullName: document.getElementById('cand_fullname').value,
                     email: document.getElementById('cand_email').value,
                     phone: document.getElementById('cand_phone').value,
+                    emergencyContactNumber: document.getElementById('cand_emergency_phone').value.trim(),
                     address: document.getElementById('cand_address').value,
                     ssn: document.getElementById('cand_ssn').value
                 },
@@ -1435,14 +1450,21 @@
                     title: currentSelectedJob.title,
                     badge: currentSelectedJob.badge
                 },
-                ratings: currentSelectedJob.skills
-                    .map((skill, idx) => ({ skill, idx }))
-                    .filter(item => !item.skill.startsWith('## '))
-                    .map(item => ({
-                        skill: item.skill,
-                        score: currentRatings[item.idx] || 0,
-                        scoreLabel: RATING_TEXT[currentRatings[item.idx] || 1]
-                    })),
+                ratings: (() => {
+                    let section = 'Skills';
+                    return currentSelectedJob.skills.map((skill, idx) => {
+                        if (skill.startsWith('## ')) {
+                            section = skill.slice(3).trim() || 'Skills';
+                            return null;
+                        }
+                        return {
+                            skill,
+                            section,
+                            score: currentRatings[idx] || 0,
+                            scoreLabel: RATING_TEXT[currentRatings[idx] || 1]
+                        };
+                    }).filter(Boolean);
+                })(),
                 references: [
                     {
                         name: document.getElementById('ref1_name').value,
@@ -1524,9 +1546,22 @@
             activeReviewSubmission = subData;
             const container = document.getElementById('printable-pdf-content');
 
-            const mid = Math.ceil(subData.ratings.length / 2);
-            const leftRatings = subData.ratings.slice(0, mid);
-            const rightRatings = subData.ratings.slice(mid);
+            // Split saved ratings by item count so legacy submissions
+            // with a single section still render both columns.
+            const ratings = Array.isArray(subData.ratings) ? subData.ratings : [];
+            const splitAt = Math.ceil(ratings.length / 2);
+            const leftRatings = ratings.slice(0, splitAt);
+            const rightRatings = ratings.slice(splitAt);
+
+            console.info(
+                '[Checklist Preview] saved:', ratings.length,
+                '| left:', leftRatings.length,
+                '| right:', rightRatings.length
+            );
+
+            if (leftRatings.length + rightRatings.length !== ratings.length) {
+                throw new Error("Checklist ratings could not be split correctly.");
+            }
 
             let html = `
                 <!-- PDF HEADER -->
@@ -1548,6 +1583,7 @@
                         <div><strong class="text-slate-600">Full Name:</strong> ${subData.candidate.fullName}</div>
                         <div><strong class="text-slate-600">Email:</strong> ${subData.candidate.email}</div>
                         <div><strong class="text-slate-600">Phone:</strong> ${subData.candidate.phone}</div>
+                        <div><strong class="text-slate-600">Emergency Contact:</strong> ${subData.candidate.emergencyContactNumber || 'N/A'}</div>
                         <div class="col-span-2"><strong class="text-slate-600">Address:</strong> ${subData.candidate.address}</div>
                         <div><strong class="text-slate-600">Last 4 SSN:</strong> ***-**-${subData.candidate.ssn}</div>
                         <div class="col-span-3 pt-1 border-t text-nova-800 font-semibold">
@@ -1561,12 +1597,12 @@
                     <h3 class="font-bold text-nova-800 uppercase text-[10px] tracking-wider mb-2 border-b pb-1">
                         2. Itemized Skill Assessment Scorecard
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border border-slate-200 rounded p-3 bg-white">
+                    <div class="grid grid-cols-2 gap-4 border border-slate-200 rounded p-3 bg-white">
                         <div class="space-y-2">
-                            ${leftRatings.map((item, i) => renderPdfSkillRow(item, i + 1)).join('')}
+                            ${renderPdfSkillColumn(leftRatings)}
                         </div>
                         <div class="space-y-2 md:border-l md:pl-4 border-slate-300">
-                            ${rightRatings.map((item, i) => renderPdfSkillRow(item, mid + i + 1)).join('')}
+                            ${renderPdfSkillColumn(rightRatings)}
                         </div>
                     </div>
                 </div>
@@ -1607,6 +1643,36 @@
             document.getElementById('reviewPdfModal').classList.remove('hidden');
         }
 
+        function renderPdfSkillColumn(items) {
+            let previousSection = null;
+
+            const job = JOBS_DATABASE.find(j => String(j.id) === String(activeReviewSubmission?.job?.id));
+            const sectionBySkill = new Map();
+
+            if (job && Array.isArray(job.skills)) {
+                let activeSection = 'Skills';
+                job.skills.forEach(skill => {
+                    if (skill.startsWith('## ')) {
+                        activeSection = skill.slice(3).trim() || 'Skills';
+                    } else {
+                        sectionBySkill.set(skill, activeSection);
+                    }
+                });
+            }
+
+            return items.map((item, index) => {
+                const section = item.section || item.category || item.group ||
+                    item.skillCategory || sectionBySkill.get(item.skill) || 'Skills';
+
+                const heading = section !== previousSection
+                    ? `<h4 class="skill-section-heading font-bold text-slate-700 text-[10px] uppercase tracking-wide border-b border-slate-300 pt-2 pb-1">${section}</h4>`
+                    : '';
+
+                previousSection = section;
+                return heading + renderPdfSkillRow(item, index + 1);
+            }).join('');
+        }
+
         function renderPdfSkillRow(item, index) {
             let starsHtml = '';
             for(let s = 1; s <= 5; s++) {
@@ -1615,7 +1681,7 @@
 
             return `
                 <div class="flex items-center justify-between p-1.5 rounded bg-slate-50 border border-slate-100 text-[11px]">
-                    <span class="font-medium text-slate-700 pr-2">${index}. ${item.skill}</span>
+                    <span class="font-medium text-slate-700 pr-2">${item.skill}</span>
                     <div class="text-right flex-shrink-0">
                         <div class="flex items-center justify-end space-x-0.5 mb-0.5">${starsHtml}</div>
                         <span class="text-[9px] font-bold text-nova-800 bg-white px-1 border rounded">${item.score} / 5</span>
@@ -1633,19 +1699,14 @@
 
             const element = document.getElementById('printable-pdf-content');
             const button = document.querySelector('#reviewPdfModal button[onclick="downloadCurrentModalPdf()"]');
+
             if (!element || typeof html2pdf === 'undefined') {
                 showToast("PDF generator is unavailable. Please refresh and try again.", "error");
                 return;
             }
 
             const oldButtonText = button ? button.innerHTML : "";
-            const oldStyles = {
-                height: element.style.height,
-                maxHeight: element.style.maxHeight,
-                overflow: element.style.overflow,
-                width: element.style.width,
-                boxSizing: element.style.boxSizing
-            };
+            let host = null;
 
             try {
                 if (button) {
@@ -1653,49 +1714,177 @@
                     button.textContent = "Preparing PDF...";
                 }
 
-                // Capture the entire report, not just the visible scroll area.
-                element.style.height = "auto";
-                element.style.maxHeight = "none";
-                element.style.overflow = "visible";
-                element.style.width = "100%";
-                element.style.boxSizing = "border-box";
+                if (!element.textContent.trim()) {
+                    throw new Error("Checklist report is empty. Reopen the review and retry.");
+                }
+
+                host = document.createElement("div");
+                host.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;background:#fff;";
+
+                const clone = element.cloneNode(true);
+                clone.removeAttribute("id");
+                clone.style.cssText += ";display:block!important;position:static!important;width:740px!important;min-width:740px!important;max-width:740px!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;";
+
+                clone.querySelectorAll(".no-print,button").forEach(node => node.remove());
+
+                const pdfStyle = document.createElement("style");
+                pdfStyle.textContent = `
+                    *, *::before, *::after {
+                        box-sizing: border-box !important;
+                    }
+                    .grid.grid-cols-2.gap-4 {
+                        display: grid !important;
+                        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+                        column-gap: 16px !important;
+                        width: 100% !important;
+                        min-width: 0 !important;
+                        max-width: 100% !important;
+                        overflow: visible !important;
+                    }
+                    .grid.grid-cols-2.gap-4 > div {
+                        display: block !important;
+                        width: auto !important;
+                        min-width: 0 !important;
+                        max-width: 100% !important;
+                        overflow: visible !important;
+                        overflow-wrap: anywhere !important;
+                    }
+                    .grid.grid-cols-2.gap-4 > div + div {
+                        border-left: 1px solid #cbd5e1 !important;
+                        padding-left: 12px !important;
+                    }
+                    .flex.items-center.justify-between {
+                        gap: 4px !important;
+                        min-width: 0 !important;
+                    }
+                    .flex.items-center.justify-between > span {
+                        flex: 1 1 auto !important;
+                        min-width: 0 !important;
+                        overflow-wrap: break-word !important;
+                        word-break: normal !important;
+                    }
+                    .flex.items-center.justify-between > .flex-shrink-0 {
+                        flex: 0 0 auto !important;
+                        width: auto !important;
+                        max-width: none !important;
+                    }
+                    table {
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        table-layout: fixed !important;
+                        border-collapse: collapse !important;
+                    }
+                    th, td {
+                        overflow-wrap: anywhere !important;
+                        word-break: normal !important;
+                        white-space: normal !important;
+                    }
+                    img, svg {
+                        max-width: 100% !important;
+                        height: auto;
+                    }
+                    .flex { min-width: 0 !important; }
+                    .overflow-x-auto, .overflow-auto {
+                        overflow: visible !important;
+                    }
+                    .skill-divider {
+                        break-inside: avoid;
+                    }
+                    h1, h2, h3, h4 {
+                        break-after: avoid;
+                    }
+                `;
+                clone.prepend(pdfStyle);
+                host.appendChild(clone);
+                document.body.appendChild(host);
 
                 await new Promise(resolve => requestAnimationFrame(() =>
                     requestAnimationFrame(resolve)
                 ));
 
-                const filename = `Checklist_${(activeReviewSubmission.candidate.fullName || 'Candidate').replace(/[^a-z0-9_-]+/gi, '_')}.pdf`;
+                if (clone.getBoundingClientRect().height < 20) {
+                    throw new Error("Checklist report did not render. Reopen the review and retry.");
+                }
+
+                const filename = `Checklist_${(activeReviewSubmission.candidate.fullName || "Candidate").replace(/[^a-z0-9_-]+/gi, "_")}.pdf`;
 
                 await html2pdf().set({
-                    margin: [0.35, 0.35, 0.4, 0.35],
+                    margin: [7, 3, 7, 3],
                     filename,
-                    image: { type: "jpeg", quality: 0.98 },
+                    image: { type: "jpeg", quality: 0.96 },
                     html2canvas: {
-                        scale: 1.5,
+                        scale: 1.25,
                         useCORS: true,
+                        backgroundColor: "#ffffff",
                         scrollX: 0,
                         scrollY: 0,
-                        windowWidth: Math.max(document.documentElement.clientWidth, element.scrollWidth),
-                        height: element.scrollHeight,
-                        backgroundColor: "#ffffff"
+                        windowWidth: 794
                     },
-                    jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-                    pagebreak: {
-                        mode: ["css", "legacy"],
-                        avoid: ["h1", "h2", "h3", ".rounded", "button"]
-                    }
-                }).from(element).save();
+                    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+                    pagebreak: { mode: [] }
+                }).from(clone).save();
 
-                showToast("Full checklist PDF downloaded.", "success");
+                showToast("Checklist PDF downloaded.", "success");
             } catch (error) {
                 console.error("Checklist PDF download failed:", error);
-                showToast("PDF download failed. Please try again.", "error");
+                showToast(error.message || "PDF download failed. Please try again.", "error");
             } finally {
-                Object.assign(element.style, oldStyles);
+                if (host && host.parentNode) host.parentNode.removeChild(host);
                 if (button) {
                     button.disabled = false;
                     button.innerHTML = oldButtonText;
                 }
+            }
+        }
+
+        function isSuperAdmin() {
+            try {
+                const token = localStorage.getItem('ats_token');
+                if (!token) return false;
+                const payloadPart = token.split('.')[1];
+                if (!payloadPart) return false;
+                const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+                const payload = JSON.parse(atob(base64));
+                return String(payload.username || '').toLowerCase() === 'ajaym4654';
+            } catch {
+                return false;
+            }
+        }
+
+        async function deleteChecklistSubmission(id) {
+            if (!isSuperAdmin()) {
+                showToast('Only the super admin can delete checklist submissions.', 'error');
+                return;
+            }
+
+            if (!confirm('Permanently delete this submitted checklist? This cannot be undone.')) {
+                return;
+            }
+
+            const token = localStorage.getItem('ats_token');
+            try {
+                const response = await fetch(
+                    `https://healthrecruit-api.onrender.com/api/skill-checklists/${encodeURIComponent(id)}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json'
+                        },
+                        cache: 'no-store'
+                    }
+                );
+
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(result.error || 'Could not delete checklist submission.');
+                }
+
+                currentSubmissions = currentSubmissions.filter(sub => String(sub.id) !== String(id));
+                renderAdminTable();
+                showToast('Checklist submission deleted.', 'success');
+            } catch (error) {
+                showToast(error.message || 'Could not delete checklist submission.', 'error');
             }
         }
 
@@ -1726,6 +1915,11 @@
                         <button onclick='openReviewPdfModal(${JSON.stringify(sub)})' class="px-2.5 py-1 bg-nova-600 hover:bg-nova-700 text-white rounded text-xs font-semibold">
                             <i class="fa-solid fa-eye mr-1"></i> Review Full Checklist
                         </button>
+                        ${isSuperAdmin() && sub.id != null ? `
+                            <button onclick="deleteChecklistSubmission(${Number(sub.id)})" class="ml-1 px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold">
+                                <i class="fa-solid fa-trash mr-1"></i> Delete
+                            </button>
+                        ` : ''}
                     </td>
                 </tr>
             `).join('');
@@ -1823,75 +2017,7 @@
             downloadAnchor.remove();
         }
 
-        function downloadSourceZip() {
-            const zip = new JSZip();
 
-            zip.file("index.html", document.documentElement.outerHTML);
-            zip.file("styles.css", `
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-body { font-family: 'Inter', sans-serif; }
-
-.skills-grid-two-col {
-    display: grid;
-    grid-template-columns: 1fr 1px 1fr;
-    gap: 1.25rem;
-}
-.skill-divider {
-    background-color: #cbd5e1;
-    width: 1px;
-    height: 100%;
-}
-            `);
-
-            zip.file("server.js", `
-const express = require('express');
-const nodemailer = require('nodemailer');
-const app = express();
-app.use(express.json());
-
-app.post('/api/submit-checklist', async (req, res) => {
-    const data = req.body;
-    let transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    });
-
-    const mailOptions = {
-        from: '"Nova Care Staffing" <noreply@novacaresstaffing.com>',
-        to: 'ajaym4654@gmail.com, ajay.m@novacaresstaffing.com',
-        subject: \`Checklist Submission - \${data.candidate.fullName} (\${data.job.title})\`,
-        html: \`<h3>New Checklist Received</h3><pre>\${JSON.stringify(data, null, 2)}</pre>\`
-    };
-
-    try {
-        await transporter.sendMail(mailOptions);
-        res.status(200).json({ success: true, message: "Emails sent" });
-    } catch(err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.listen(3000, () => console.log('Server running on port 3000'));
-            `);
-
-            zip.file("README.md", `
-# Nova Care Staffing - Healthcare Skill Checklist System
-
-## Landing Page First Architecture
-1. **Catalog View**: Candidates start by picking their job title.
-2. **Back Button**: Easily switch positions anytime.
-3. **Full Rating PDF**: Itemized score rendering across two columns.
-4. **Admin PIN**: \`1234\`.
-            `);
-
-            zip.generateAsync({type:"blob"}).then(function(content) {
-                saveAs(content, "NovaCare_HealthcareChecklist_App.zip");
-                showToast("ZIP bundle generated successfully!", "success");
-            });
-        }
     </script>
 </body>
 </html>

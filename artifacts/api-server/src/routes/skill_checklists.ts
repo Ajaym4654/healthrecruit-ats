@@ -43,6 +43,37 @@ router.get("/skill-checklists/:id", requireAuth, requireAdmin, async (req: any, 
   }
 });
 
+router.delete("/skill-checklists/:id", requireAuth, async (req: any, res) => {
+  try {
+    if (String(req.user?.username || "").toLowerCase() !== "ajaym4654" ||
+        String(req.user?.role || "").toLowerCase() !== "admin") {
+      res.status(403).json({ error: "Super admin access required" });
+      return;
+    }
+
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id < 1) {
+      res.status(400).json({ error: "Invalid submission ID" });
+      return;
+    }
+
+    const [deleted] = await db.delete(skillChecklistsTable)
+      .where(eq(skillChecklistsTable.id, id))
+      .returning({ id: skillChecklistsTable.id });
+
+    if (!deleted) {
+      res.status(404).json({ error: "Submission not found" });
+      return;
+    }
+
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ success: true, id: deleted.id });
+  } catch (error) {
+    req.log?.error(error);
+    res.status(500).json({ error: "Could not delete checklist submission" });
+  }
+});
+
 router.post("/skill-checklists", requireAuth, requireAdmin, async (req: any, res) => {
   try {
     const data = req.body?.submissionData;
