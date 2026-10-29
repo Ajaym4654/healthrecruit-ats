@@ -1723,8 +1723,7 @@
 
                 const clone = element.cloneNode(true);
                 clone.removeAttribute("id");
-                const pdfLeftOffset = window.location.hostname === "healthrecruit-app.onrender.com" ? 0 : -38;
-                clone.style.cssText += `;display:block!important;position:static!important;width:740px!important;min-width:740px!important;max-width:740px!important;margin-left:${pdfLeftOffset}px!important;margin-right:0!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;`;
+                clone.style.cssText += ";display:block!important;position:static!important;width:740px!important;min-width:740px!important;max-width:740px!important;margin-left:-38px!important;margin-right:0!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;";
 
                 clone.querySelectorAll(".no-print,button").forEach(node => node.remove());
 
