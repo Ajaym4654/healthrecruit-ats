@@ -117,7 +117,7 @@ export default function JobsPage() {
   const { data: user, isLoading: userLoading } = useGetMe();
   const { data: jobData, isLoading, isError, refetch } = useListJobs();
   const jobs = (Array.isArray(jobData) ? jobData : []) as Job[];
-  const isAdmin = user?.role === "admin";
+  const isAdmin = (user?.role === "admin" || user?.role === "superadmin");
 
   const [client, setClient] = useState<ClientChoice>("Westways");
   const [search, setSearch] = useState("");

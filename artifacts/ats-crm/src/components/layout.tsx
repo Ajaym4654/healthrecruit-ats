@@ -59,7 +59,7 @@ function AppSidebar() {
     });
   };
 
-  const isAdmin = user?.role === "admin";
+  const isAdmin = (user?.role === "admin" || user?.role === "superadmin");
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },

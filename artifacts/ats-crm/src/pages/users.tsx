@@ -103,7 +103,7 @@ export default function UsersPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (me?.role !== "admin") {
+  if ((me?.role !== "admin" && me?.role !== "superadmin")) {
     return (
       <div className="flex items-center justify-center h-64 text-muted-foreground">
         Access restricted to administrators.
