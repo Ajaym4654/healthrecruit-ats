@@ -1776,11 +1776,11 @@
                 }
 
                 host = document.createElement("div");
-                host.style.cssText = "position:fixed;left:0;top:0;width:734px;background:#fff;z-index:-1;pointer-events:none;overflow:visible;";
+                host.style.cssText = "position:fixed;left:0;top:0;width:794px;background:#fff;z-index:-1;pointer-events:none;overflow:visible;";
 
                 const clone = element.cloneNode(true);
                 clone.removeAttribute("id");
-                clone.style.cssText += ";display:block!important;position:static!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;";
+                clone.style.cssText += ";display:block!important;position:static!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px 20px 20px 70px!important;";
 
                 clone.querySelectorAll(".no-print,button").forEach(node => node.remove());
 
@@ -1875,8 +1875,8 @@
                         backgroundColor: "#ffffff",
                         scrollX: 0,
                         scrollY: 0,
-                        windowWidth: 734,
-                        width: 734
+                        windowWidth: 794,
+                        width: 778
                     },
                     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
                     pagebreak: { mode: [] }
