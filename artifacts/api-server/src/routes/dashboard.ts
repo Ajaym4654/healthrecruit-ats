@@ -98,8 +98,9 @@ router.get("/dashboard/weekly-growth", requireAuth, async (_req, res): Promise<v
     ORDER BY DATE_TRUNC('week', created_at) ASC
   `);
 
+  const resultRows = (rows as any).rows ?? rows;
   res.json(
-    (rows as unknown as any[]).map((r) => ({
+    resultRows.map((r: any) => ({
       week: r.week,
       date: r.date,
       count: Number(r.count),
