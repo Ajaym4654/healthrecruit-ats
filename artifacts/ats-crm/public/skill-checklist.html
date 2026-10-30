@@ -1780,7 +1780,7 @@
 
                 const clone = element.cloneNode(true);
                 clone.removeAttribute("id");
-                clone.style.cssText += ";display:block!important;position:static!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px 20px 20px 250px!important;";
+                clone.style.cssText += ";display:block!important;position:static!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;";
 
                 clone.querySelectorAll(".no-print,button").forEach(node => node.remove());
 
@@ -1866,7 +1866,7 @@
                 const filename = `Checklist_${(activeReviewSubmission.candidate.fullName || "Candidate").replace(/[^a-z0-9_-]+/gi, "_")}.pdf`;
 
                 await html2pdf().set({
-                    margin: [8, 8, 8, 8],
+                    margin: [8, 70, 8, -54],
                     filename,
                     image: { type: "jpeg", quality: 0.96 },
                     html2canvas: {
