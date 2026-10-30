@@ -1776,11 +1776,11 @@
                 }
 
                 host = document.createElement("div");
-                host.style.cssText = "position:fixed;left:0;top:0;width:794px;background:#fff;z-index:-1;pointer-events:none;";
+                host.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;background:#fff;z-index:-1;pointer-events:none;overflow:visible;";
 
                 const clone = element.cloneNode(true);
                 clone.removeAttribute("id");
-                clone.style.cssText += ";display:block!important;position:static!important;width:740px!important;min-width:740px!important;max-width:740px!important;margin-left:auto!important;margin-right:auto!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;";
+                clone.style.cssText += ";display:block!important;position:static!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;";
 
                 clone.querySelectorAll(".no-print,button").forEach(node => node.remove());
 
@@ -1866,16 +1866,17 @@
                 const filename = `Checklist_${(activeReviewSubmission.candidate.fullName || "Candidate").replace(/[^a-z0-9_-]+/gi, "_")}.pdf`;
 
                 await html2pdf().set({
-                    margin: [7, 7, 7, 7],
+                    margin: [8, 8, 8, 8],
                     filename,
                     image: { type: "jpeg", quality: 0.96 },
                     html2canvas: {
-                        scale: 1.5,
+                        scale: 2,
                         useCORS: true,
                         backgroundColor: "#ffffff",
                         scrollX: 0,
                         scrollY: 0,
-                        windowWidth: 794
+                        windowWidth: 794,
+                        width: 778
                     },
                     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
                     pagebreak: { mode: [] }
