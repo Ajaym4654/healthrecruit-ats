@@ -1866,7 +1866,7 @@
                 const filename = `Checklist_${(activeReviewSubmission.candidate.fullName || "Candidate").replace(/[^a-z0-9_-]+/gi, "_")}.pdf`;
 
                 await html2pdf().set({
-                    margin: [8, 70, 8, -54],
+                    margin: [8, 8, 8, 8],
                     filename,
                     image: { type: "jpeg", quality: 0.96 },
                     html2canvas: {
@@ -1876,7 +1876,7 @@
                         scrollX: 0,
                         scrollY: 0,
                         windowWidth: 794,
-                        width: 778
+                        width: 794
                     },
                     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
                     pagebreak: { mode: [] }
