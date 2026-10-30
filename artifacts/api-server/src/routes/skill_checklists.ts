@@ -23,6 +23,14 @@ router.get("/skill-checklists", requireAuth, requireAdmin, async (req: any, res)
   }
 });
 
+router.get("/skill-checklists/permissions", requireAuth, requireAdmin, (req: any, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.json({
+    canDelete: String(req.user?.username || "").toLowerCase() === "ajaym4654" &&
+      String(req.user?.role || "").toLowerCase() === "superadmin"
+  });
+});
+
 router.get("/skill-checklists/:id", requireAuth, requireAdmin, async (req: any, res) => {
   try {
     const id = Number(req.params.id);
@@ -46,7 +54,7 @@ router.get("/skill-checklists/:id", requireAuth, requireAdmin, async (req: any, 
 router.delete("/skill-checklists/:id", requireAuth, async (req: any, res) => {
   try {
     if (String(req.user?.username || "").toLowerCase() !== "ajaym4654" ||
-        String(req.user?.role || "").toLowerCase() !== "admin") {
+        String(req.user?.role || "").toLowerCase() !== "superadmin") {
       res.status(403).json({ error: "Super admin access required" });
       return;
     }
