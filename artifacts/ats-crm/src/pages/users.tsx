@@ -173,7 +173,7 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      {u.id !== me?.id && !u.isProtected && u.role !== "superadmin" && (
+                      {u.id !== me?.id && !u.isProtected && (
                         <>
                           <Button
                             variant="ghost"

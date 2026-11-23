@@ -28,9 +28,9 @@ async function getTarget(id: number) {
 }
 
 function canManage(req: any, target: any): boolean {
-  if (!target || target.isProtected || isPrimarySuperAdmin(target) || target.role === "superadmin") return false;
-  if (req.user.role === "superadmin") return true;
-  return req.user.role === "admin" && target.role === "recruiter";
+  // The primary account is immutable through User Management. Admins and
+  // Superadmins can manage every other account, including other Superadmins.
+  return !!target && req.user.id !== target.id && !isPrimarySuperAdmin(target);
 }
 
 router.get("/login-activity", requireAuth, requireSuperAdmin, async (req: any, res): Promise<void> => {
@@ -73,12 +73,11 @@ router.get("/users", requireAuth, requireAdmin, async (req: any, res): Promise<v
 
   const usersWithProtection = users.map((user) => ({
     ...user,
-    isProtected: user.isProtected || isPrimarySuperAdmin(user) || user.role === "superadmin",
+    isProtected: isPrimarySuperAdmin(user),
   }));
 
-  res.json(req.user.role === "superadmin"
-    ? usersWithProtection
-    : usersWithProtection.filter((u) => u.role === "recruiter"));
+  // Both Admins and Superadmins can see/manage all accounts except the primary one.
+  res.json(usersWithProtection);
 });
 
 router.post("/users", requireAuth, requireAdmin, async (req: any, res): Promise<void> => {
@@ -226,8 +225,8 @@ router.delete("/users/:id", requireAuth, requireAdmin, async (req: any, res): Pr
     return;
   }
 
-  if (isPrimarySuperAdmin(target) || target.isProtected || target.role === "superadmin" || !canManage(req, target)) {
-    res.status(403).json({ error: "Protected Superadmin accounts cannot be deleted" });
+  if (!canManage(req, target)) {
+    res.status(403).json({ error: "You cannot delete this account" });
     return;
   }
 
