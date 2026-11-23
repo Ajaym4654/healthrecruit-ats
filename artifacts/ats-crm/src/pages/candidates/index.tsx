@@ -288,7 +288,7 @@ export default function CandidatesPage() {
               Delete ({selectedIds.length})
             </Button>
           )}
-          {me?.role === "admin" && (
+          {me?.role === "superadmin" && (
             <>
               <Button variant="outline" onClick={handleExportCSV} disabled={isExporting}>
                 <FileText className="size-4 mr-2" />
