@@ -6,6 +6,10 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+// Render terminates TLS at its edge proxy; trust the first proxy for the client IP.
+
+app.set("trust proxy", 1);
+
 app.use(
   pinoHttp({
     logger,
