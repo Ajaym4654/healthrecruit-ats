@@ -1775,14 +1775,15 @@
                     throw new Error("Checklist report is empty. Reopen the review and retry.");
                 }
 
-                // Use a deterministic A4 capture width instead of inheriting the modal width.
-                const pdfCaptureWidth = 794;
+                // Match the capture width to the actual A4 printable area (210mm - 1mm - 17mm).
+                // At 96 CSS px per inch, 192mm is approximately 725px.
+                const pdfCaptureWidth = Math.floor(((210 - 1 - 17) / 25.4) * 96);
                 host = document.createElement("div");
-                host.style.cssText = "position:fixed;left:0;top:0;width:794px;min-width:794px;max-width:794px;background:#fff;z-index:-1;pointer-events:none;overflow:visible;opacity:0;";
+                host.style.cssText = `position:fixed;left:0;top:0;width:${pdfCaptureWidth}px;min-width:${pdfCaptureWidth}px;max-width:${pdfCaptureWidth}px;background:#fff;z-index:-1;pointer-events:none;overflow:visible;opacity:0;`;
 
                 const clone = element.cloneNode(true);
                 clone.removeAttribute("id");
-                clone.style.cssText += ";display:block!important;position:static!important;width:794px!important;min-width:794px!important;max-width:794px!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;";
+                clone.style.cssText += `;display:block!important;position:static!important;width:${pdfCaptureWidth}px!important;min-width:${pdfCaptureWidth}px!important;max-width:${pdfCaptureWidth}px!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;`;
                 clone.querySelectorAll(":scope > *").forEach(node => {
                     node.style.setProperty("width", "100%", "important");
                     node.style.setProperty("max-width", "100%", "important");
@@ -1882,7 +1883,7 @@
                         backgroundColor: "#ffffff",
                         scrollX: 0,
                         scrollY: 0,
-                        windowWidth: Math.max(document.documentElement.clientWidth, 794)
+                        windowWidth: pdfCaptureWidth
                     },
                     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
                     pagebreak: { mode: [] }
