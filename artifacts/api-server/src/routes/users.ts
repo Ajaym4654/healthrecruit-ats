@@ -1,8 +1,8 @@
 import { Router, type IRouter } from "express";
 import bcrypt from "bcryptjs";
-import { db, usersTable, recruiterPermissions } from "@workspace/db";
-import { eq } from "drizzle-orm";
-import { requireAuth, requireAdmin } from "./auth";
+import { db, usersTable, recruiterPermissions, loginActivityTable } from "@workspace/db";
+import { count, desc, eq, max } from "drizzle-orm";
+import { requireAuth, requireAdmin, requireSuperAdmin } from "./auth";
 
 const router: IRouter = Router();
 
@@ -27,6 +27,34 @@ function canManage(req: any, target: any): boolean {
   if (req.user.role === "superadmin") return true;
   return req.user.role === "admin" && target.role === "recruiter";
 }
+
+router.get("/login-activity", requireAuth, requireSuperAdmin, async (req: any, res): Promise<void> => {
+  const requestedLimit = Number(req.query.limit) || 500;
+  const limit = Math.min(Math.max(requestedLimit, 1), 1000);
+  const events = await db.select({
+    id: loginActivityTable.id,
+    userId: loginActivityTable.userId,
+    username: loginActivityTable.username,
+    eventType: loginActivityTable.eventType,
+    ipAddress: loginActivityTable.ipAddress,
+    userAgent: loginActivityTable.userAgent,
+    createdAt: loginActivityTable.createdAt,
+  }).from(loginActivityTable)
+    .orderBy(desc(loginActivityTable.createdAt))
+    .limit(limit);
+
+  const summaries = await db.select({
+    username: loginActivityTable.username,
+    successfulLogins: count(),
+    lastLogin: max(loginActivityTable.createdAt),
+  }).from(loginActivityTable)
+    .where(eq(loginActivityTable.eventType, "success"))
+    .groupBy(loginActivityTable.username)
+    .orderBy(desc(max(loginActivityTable.createdAt)));
+
+  res.setHeader("Cache-Control", "no-store");
+  res.json({ events, summaries, limit });
+});
 
 router.get("/users", requireAuth, requireAdmin, async (req: any, res): Promise<void> => {
   const users = await db.select({

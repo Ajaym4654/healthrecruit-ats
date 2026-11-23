@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { db, usersTable } from "@workspace/db";
+import { db, usersTable, loginActivityTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { logger } from "../lib/logger";
 
@@ -107,11 +107,37 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.username, username));
+    .where(eq(usersTable.username, String(username).trim()));
 
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+  const validPassword = !!user && await bcrypt.compare(password, user.passwordHash);
+  const requestDetails = {
+    username: String(username).trim().slice(0, 100),
+    ipAddress: typeof req.ip === "string" ? req.ip.slice(0, 100) : null,
+    userAgent: String(req.get("user-agent") || "").slice(0, 1000) || null,
+  };
+
+  if (!user || !validPassword) {
+    try {
+      await db.insert(loginActivityTable).values({
+        ...requestDetails,
+        userId: user?.id ?? null,
+        eventType: "failed",
+      });
+    } catch (error) {
+      logger.warn({ error }, "Could not record failed login activity");
+    }
     res.status(401).json({ error: "Invalid credentials" });
     return;
+  }
+
+  try {
+    await db.insert(loginActivityTable).values({
+      ...requestDetails,
+      userId: user.id,
+      eventType: "success",
+    });
+  } catch (error) {
+    logger.warn({ error, userId: user.id }, "Could not record successful login activity");
   }
 
   const token = jwt.sign(

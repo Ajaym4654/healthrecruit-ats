@@ -24,6 +24,7 @@ import {
   UserCog,
   BriefcaseBusiness,
   ClipboardCheck,
+  Activity,
 } from "lucide-react";
 import { useLogout, useGetMe } from "@workspace/api-client-react";
 
@@ -71,6 +72,7 @@ function AppSidebar() {
     { icon: ClipboardCheck, label: "Skill Checklist", href: "/skill-checklist" },
     { icon: Copy, label: "Duplicates", href: "/duplicates" },
     ...(isAdmin ? [{ icon: UserCog, label: "Users", href: "/users" }] : []),
+    ...(user?.role === "superadmin" ? [{ icon: Activity, label: "Login Activity", href: "/login-activity" }] : []),
   ];
 
   return (
