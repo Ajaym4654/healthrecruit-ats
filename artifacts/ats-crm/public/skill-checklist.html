@@ -1626,7 +1626,7 @@
                         
                         <p class="text-xs text-slate-500 font-medium">Healthcare Clinical Skill Assessment Record</p>
                     </div>
-                    <div class="text-right text-[11px] text-slate-500">
+                    <div class="pdf-header-meta text-right text-[11px] text-slate-500">
                         <p class="font-bold text-slate-700">Ref ID: <span class="text-nova-700">${subData.id}</span></p>
                         <p>Date: ${formatUsDateTime(subData.submittedAt)}</p>
                     </div>
@@ -1782,7 +1782,7 @@
 
                 const clone = element.cloneNode(true);
                 clone.removeAttribute("id");
-                clone.style.cssText += ";display:block!important;position:static!important;width:794px!important;min-width:794px!important;max-width:794px!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;";
+                clone.style.cssText += ";display:block!important;position:static!important;width:794px!important;min-width:794px!important;max-width:794px!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px 36px 20px 20px!important;";
                 clone.querySelectorAll(":scope > *").forEach(node => {
                     node.style.setProperty("width", "100%", "important");
                     node.style.setProperty("max-width", "100%", "important");
@@ -1816,6 +1816,11 @@
                     .grid.grid-cols-2.gap-4 > div + div {
                         border-left: 1px solid #cbd5e1 !important;
                         padding-left: 12px !important;
+                    }
+                    .pdf-header-meta {
+                        flex: 0 0 auto !important;
+                        white-space: nowrap !important;
+                        min-width: max-content !important;
                     }
                     .pdf-rating-stars {
                         display: flex !important;
