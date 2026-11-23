@@ -1740,7 +1740,7 @@
                 <div class="flex items-center justify-between p-1.5 rounded bg-slate-50 border border-slate-100 text-[11px]">
                     <span class="font-medium text-slate-700 pr-2">${item.skill}</span>
                     <div class="text-right flex-shrink-0">
-                        <div class="flex items-center justify-end space-x-0.5 mb-0.5">${starsHtml}</div>
+                        <div class="pdf-rating-stars flex items-center justify-end space-x-0.5 mb-0.5">${starsHtml}</div>
                         <span class="text-[9px] font-bold text-nova-800 bg-white px-1 border rounded">${item.score} / 5</span>
                     </div>
                 </div>
@@ -1816,6 +1816,20 @@
                     .grid.grid-cols-2.gap-4 > div + div {
                         border-left: 1px solid #cbd5e1 !important;
                         padding-left: 12px !important;
+                    }
+                    .pdf-rating-stars {
+                        display: flex !important;
+                        flex: 0 0 auto !important;
+                        flex-wrap: nowrap !important;
+                        width: max-content !important;
+                        min-width: max-content !important;
+                        white-space: nowrap !important;
+                        gap: 2px !important;
+                    }
+                    .pdf-rating-stars i {
+                        display: inline-block !important;
+                        flex: 0 0 10px !important;
+                        width: 10px !important;
                     }
                     .flex.items-center.justify-between {
                         gap: 4px !important;
