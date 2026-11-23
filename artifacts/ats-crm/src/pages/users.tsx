@@ -87,6 +87,26 @@ export default function UsersPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const roleMutation = useMutation({
+    mutationFn: async ({ id, role }: { id: number; role: string }) => {
+      const res = await authFetch(`/users/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ role }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to update role");
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("User role updated");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+
   const resetMutation = useMutation({
     mutationFn: async ({ id, password }: { id: number; password: string }) => {
       const res = await authFetch(`/users/${id}/password`, {
@@ -164,9 +184,26 @@ export default function UsersPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={u.role === "admin" || u.role === "superadmin" ? "default" : "secondary"} className="capitalize">
-                      {u.role}
-                    </Badge>
+                    {me?.role === "superadmin" && u.id !== me?.id && !u.isProtected ? (
+                      <Select
+                        value={u.role}
+                        onValueChange={(role) => roleMutation.mutate({ id: u.id, role })}
+                        disabled={roleMutation.isPending}
+                      >
+                        <SelectTrigger className="w-36">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="recruiter">Recruiter</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="superadmin">Superadmin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Badge variant={u.role === "admin" || u.role === "superadmin" ? "default" : "secondary"} className="capitalize">
+                        {u.role}
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {format(new Date(u.createdAt), "MMM d, yyyy")}
