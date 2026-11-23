@@ -116,7 +116,7 @@ export default function UsersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
-          <p className="text-muted-foreground">Create and manage recruiter accounts.</p>
+          <p className="text-muted-foreground">Create and manage user accounts{me?.role === "superadmin" ? ", including Superadmins" : ""}.</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
           <Plus className="size-4 mr-2" />
@@ -222,7 +222,7 @@ export default function UsersPage() {
               <Label>Password</Label>
               <Input
                 type="password"
-                placeholder="Min. 6 characters"
+                placeholder="Min. 8 characters"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
@@ -236,6 +236,9 @@ export default function UsersPage() {
                 <SelectContent>
                   <SelectItem value="recruiter">Recruiter — can view &amp; edit candidates</SelectItem>
                   <SelectItem value="admin">Admin — full access including import/export</SelectItem>
+                {me?.role === "superadmin" && (
+                  <SelectItem value="superadmin">Superadmin — full system access</SelectItem>
+                )}
                 </SelectContent>
               </Select>
             </div>
@@ -244,7 +247,7 @@ export default function UsersPage() {
             <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
             <Button
               onClick={() => createMutation.mutate()}
-              disabled={createMutation.isPending || !newUsername || !newPassword}
+              disabled={createMutation.isPending || !newUsername.trim() || newPassword.length < 8}
             >
               {createMutation.isPending ? "Creating…" : "Create Account"}
             </Button>
@@ -273,7 +276,7 @@ export default function UsersPage() {
             <Button variant="outline" onClick={() => setShowReset(null)}>Cancel</Button>
             <Button
               onClick={() => showReset && resetMutation.mutate({ id: showReset.id, password: resetPassword })}
-              disabled={resetMutation.isPending || resetPassword.length < 6}
+              disabled={resetMutation.isPending || resetPassword.length < 8}
             >
               {resetMutation.isPending ? "Saving…" : "Reset Password"}
             </Button>
