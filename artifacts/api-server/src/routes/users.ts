@@ -5,7 +5,7 @@ import { count, desc, eq, max } from "drizzle-orm";
 import { requireAuth, requireAdmin, requireSuperAdmin } from "./auth";
 
 const router: IRouter = Router();
-const PRIMARY_SUPERADMIN_USERNAME = "ajaym4654@gmail.com";
+const PRIMARY_SUPERADMIN_USERNAME = "ajaym4654";
 
 function isPrimarySuperAdmin(target: any): boolean {
   return String(target?.username || "").trim().toLowerCase() === PRIMARY_SUPERADMIN_USERNAME;
