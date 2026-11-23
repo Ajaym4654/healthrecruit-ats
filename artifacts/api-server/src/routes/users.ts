@@ -81,7 +81,11 @@ router.post("/users", requireAuth, requireAdmin, async (req: any, res): Promise<
 
   const newRole = role || "recruiter";
 
-  if (!["admin", "recruiter"].includes(newRole)) {
+  const allowedRoles = req.user.role === "superadmin"
+    ? ["admin", "recruiter", "superadmin"]
+    : ["recruiter"];
+
+  if (!allowedRoles.includes(newRole)) {
     res.status(400).json({ error: "Invalid role" });
     return;
   }
@@ -99,9 +103,12 @@ router.post("/users", requireAuth, requireAdmin, async (req: any, res): Promise<
     return;
   }
 
-  const allowed = Array.isArray(permissions)
-    ? permissions.filter((p: string) => (recruiterPermissions as readonly string[]).includes(p))
-    : defaultPermissions;
+  // Superadmin accounts do not use recruiter permission grants.
+  const allowed = newRole === "superadmin"
+    ? []
+    : Array.isArray(permissions)
+      ? permissions.filter((p: string) => (recruiterPermissions as readonly string[]).includes(p))
+      : defaultPermissions;
 
   const passwordHash = await bcrypt.hash(password, 12);
 
