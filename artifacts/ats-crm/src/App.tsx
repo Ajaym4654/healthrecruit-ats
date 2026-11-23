@@ -18,6 +18,7 @@ import SearchPage from "@/pages/search";
 import ImportPage from "@/pages/import";
 import DuplicatesPage from "@/pages/duplicates";
 import UsersPage from "@/pages/users";
+import LoginActivityPage from "@/pages/login-activity";
 import JobsPage from "@/pages/jobs";
 import SkillChecklistPage from "@/pages/skill-checklist";
 
@@ -55,6 +56,7 @@ function Router() {
         <Route path="/import" component={ImportPage} />
         <Route path="/duplicates" component={DuplicatesPage} />
         <Route path="/users" component={UsersPage} />
+        <Route path="/login-activity" component={LoginActivityPage} />
         <Route path="/jobs" component={JobsPage} />
         <Route path="/skill-checklist" component={SkillChecklistPage} />
         <Route path="/login" component={DashboardPage} />
