@@ -154,15 +154,22 @@ router.patch("/users/:id", requireAuth, requireAdmin, async (req: any, res): Pro
   const updates: any = {};
 
   if (req.body.role !== undefined) {
-    if (!["admin", "recruiter"].includes(req.body.role)) {
-      res.status(400).json({ error: "Invalid role" });
-      return;
-    }
-    if (req.user.role === "admin" && req.body.role !== "recruiter") {
-      res.status(403).json({ error: "Admins can assign Recruiter role only" });
+    const allowedRoles = req.user.role === "superadmin"
+      ? ["admin", "recruiter", "superadmin"]
+      : ["recruiter"];
+    if (!allowedRoles.includes(req.body.role)) {
+      res.status(400).json({
+        error: req.user.role === "admin"
+          ? "Admins can assign Recruiter role only"
+          : "Invalid role",
+      });
       return;
     }
     updates.role = req.body.role;
+    // Superadmins do not use recruiter permission grants. Restore defaults
+    // when an account is moved back to Recruiter.
+    if (req.body.role === "superadmin") updates.permissions = [];
+    if (req.body.role === "recruiter") updates.permissions = defaultPermissions;
   }
 
   if (req.body.permissions !== undefined) {
