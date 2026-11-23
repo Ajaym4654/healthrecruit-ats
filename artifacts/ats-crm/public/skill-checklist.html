@@ -1775,15 +1775,14 @@
                     throw new Error("Checklist report is empty. Reopen the review and retry.");
                 }
 
-                // Match the capture width to the actual A4 printable area (210mm - 1mm - 17mm).
-                // At 96 CSS px per inch, 192mm is approximately 725px.
-                const pdfCaptureWidth = Math.floor(((210 - 1 - 17) / 25.4) * 96);
+                // Keep the established A4 capture viewport; let html2pdf fit it to the printable page.
+                const pdfCaptureWidth = 794;
                 host = document.createElement("div");
-                host.style.cssText = `position:fixed;left:0;top:0;width:${pdfCaptureWidth}px;min-width:${pdfCaptureWidth}px;max-width:${pdfCaptureWidth}px;background:#fff;z-index:-1;pointer-events:none;overflow:visible;opacity:0;`;
+                host.style.cssText = "position:fixed;left:0;top:0;width:794px;min-width:794px;max-width:794px;background:#fff;z-index:-1;pointer-events:none;overflow:visible;opacity:0;";
 
                 const clone = element.cloneNode(true);
                 clone.removeAttribute("id");
-                clone.style.cssText += `;display:block!important;position:static!important;width:${pdfCaptureWidth}px!important;min-width:${pdfCaptureWidth}px!important;max-width:${pdfCaptureWidth}px!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;`;
+                clone.style.cssText += ";display:block!important;position:static!important;width:794px!important;min-width:794px!important;max-width:794px!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;";
                 clone.querySelectorAll(":scope > *").forEach(node => {
                     node.style.setProperty("width", "100%", "important");
                     node.style.setProperty("max-width", "100%", "important");
@@ -1874,7 +1873,7 @@
                 const filename = `Checklist_${(activeReviewSubmission.candidate.fullName || "Candidate").replace(/[^a-z0-9_-]+/gi, "_")}.pdf`;
 
                 await html2pdf().set({
-                    margin: [8, 1, 8, 17], // html2pdf order [top, left, bottom, right]: shift content 3mm further left and protect right edge.
+                    margin: [8, 4, 8, 14], // html2pdf order [top, left, bottom, right]: restore the previously accepted alignment.
                     filename,
                     image: { type: "jpeg", quality: 0.96 },
                     html2canvas: {
@@ -1883,7 +1882,7 @@
                         backgroundColor: "#ffffff",
                         scrollX: 0,
                         scrollY: 0,
-                        windowWidth: pdfCaptureWidth
+                        windowWidth: Math.max(document.documentElement.clientWidth, 794)
                     },
                     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
                     pagebreak: { mode: [] }
