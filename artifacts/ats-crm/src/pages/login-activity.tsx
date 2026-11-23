@@ -8,6 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 
+interface UserLoginSummary {
+  username: string;
+  successfulLogins: number;
+  lastLogin: string | null;
+}
+
 interface LoginEvent {
   id: number;
   userId: number | null;
@@ -45,7 +51,7 @@ function getDeviceDetails(userAgent: string | null) {
 export default function LoginActivityPage() {
   const { data: me } = useGetMe();
   const [search, setSearch] = useState("");
-  const { data, isLoading, isError, error } = useQuery<{ events: LoginEvent[]; limit: number }>({
+  const { data, isLoading, isError, error } = useQuery<{ events: LoginEvent[]; summaries: UserLoginSummary[]; limit: number }>({
     queryKey: ["superadmin-login-activity"],
     queryFn: async () => {
       const res = await authFetch("/login-activity?limit=1000");
@@ -58,6 +64,7 @@ export default function LoginActivityPage() {
   });
 
   const events = data?.events ?? [];
+  const summaries = data?.summaries ?? [];
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return q ? events.filter((event) =>
@@ -89,6 +96,23 @@ export default function LoginActivityPage() {
         <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Failed attempts</CardTitle><XCircle className="size-4 text-destructive" /></CardHeader><CardContent><div className="text-2xl font-bold">{failed}</div><p className="text-xs text-muted-foreground">Invalid username or password</p></CardContent></Card>
         <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Users seen</CardTitle><Users className="size-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{users}</div><p className="text-xs text-muted-foreground">Unique usernames with successful logins</p></CardContent></Card>
       </div>
+
+      <Card>
+        <CardHeader><CardTitle>User login summary</CardTitle><p className="text-sm text-muted-foreground">All-time successful login count and most recent sign-in for each username.</p></CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader><TableRow><TableHead>User</TableHead><TableHead>Total successful logins</TableHead><TableHead>Last login</TableHead></TableRow></TableHeader>
+            <TableBody>
+              {summaries.length === 0 ? <TableRow><TableCell colSpan={3} className="h-20 text-center text-muted-foreground">No successful logins recorded yet.</TableCell></TableRow>
+                : summaries.map((summary) => <TableRow key={summary.username}>
+                  <TableCell className="font-medium">{summary.username}</TableCell>
+                  <TableCell><Badge variant="secondary">{summary.successfulLogins}</Badge></TableCell>
+                  <TableCell className="text-sm">{summary.lastLogin ? format(new Date(summary.lastLogin), "MMM d, yyyy h:mm:ss a") : "—"}</TableCell>
+                </TableRow>)}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="space-y-3">
