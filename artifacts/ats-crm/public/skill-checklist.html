@@ -177,7 +177,7 @@
             <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden mb-8">
                 <div class="bg-gradient-to-r from-nova-800 to-nova-600 p-6 text-white">
                     <h2 class="text-2xl font-bold mb-1" id="form-header-title">Clinical Skill Assessment</h2>
-                    <p class="text-nova-100 text-sm">Fill in your information, exact reference dates, and complete the 5-star skill rating self-assessment.</p>
+                    <p class="text-nova-100 text-sm">Fill in your information and complete the 5-star skill rating self-assessment.</p>
                 </div>
 
                 <form id="skillsForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-8">
@@ -252,41 +252,41 @@
                     <section>
                         <h3 class="text-lg font-semibold text-nova-900 border-b pb-2 mb-4 flex items-center">
                             <span class="bg-nova-100 text-nova-800 rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold mr-2">3</span>
-                            Supervisory References & Duration Worked
+                            Supervisory References & Duration Worked (Optional)
                         </h3>
-                        <p class="text-xs text-slate-500 mb-4">Provide 2 supervisory references with explicit start (From) and end (To) dates.</p>
+                        <p class="text-xs text-slate-500 mb-4">References are optional. You may provide supervisor details and work dates if available, or leave this entire section blank.</p>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Reference 1 -->
                             <div class="p-4 border rounded-xl bg-slate-50/50 space-y-3">
                                 <h4 class="font-semibold text-sm text-nova-800 border-b pb-1">Reference 1 (Supervisor)</h4>
                                 <div>
-                                    <label class="block text-xs text-slate-600">Supervisor Name *</label>
-                                    <input type="text" id="ref1_name" required class="w-full px-3 py-1.5 border rounded text-sm bg-white">
+                                    <label class="block text-xs text-slate-600">Supervisor Name</label>
+                                    <input type="text" id="ref1_name" class="w-full px-3 py-1.5 border rounded text-sm bg-white">
                                 </div>
                                 <div>
-                                    <label class="block text-xs text-slate-600">Facility / Hospital Name *</label>
-                                    <input type="text" id="ref1_facility" required class="w-full px-3 py-1.5 border rounded text-sm bg-white">
+                                    <label class="block text-xs text-slate-600">Facility / Hospital Name</label>
+                                    <input type="text" id="ref1_facility" class="w-full px-3 py-1.5 border rounded text-sm bg-white">
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="block text-xs text-slate-600">Role / Title *</label>
-                                        <input type="text" id="ref1_title" required class="w-full px-3 py-1.5 border rounded text-sm bg-white" placeholder="e.g. Nurse Manager">
+                                        <label class="block text-xs text-slate-600">Role / Title</label>
+                                        <input type="text" id="ref1_title" class="w-full px-3 py-1.5 border rounded text-sm bg-white" placeholder="e.g. Nurse Manager">
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-slate-600">Phone Number *</label>
-                                        <input type="tel" id="ref1_phone" required class="w-full px-3 py-1.5 border rounded text-sm bg-white">
+                                        <label class="block text-xs text-slate-600">Phone Number</label>
+                                        <input type="tel" id="ref1_phone" class="w-full px-3 py-1.5 border rounded text-sm bg-white">
                                     </div>
                                 </div>
                                 <!-- WORK DURATION: FROM DATE & TO DATE -->
                                 <div class="grid grid-cols-2 gap-2 bg-white p-2 rounded border border-slate-200">
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-700">From Date *</label>
-                                        <input type="text" id="ref1_from" required maxlength="5" inputmode="numeric" pattern="(0[1-9]|1[0-2])/[0-9]{2}" placeholder="MM/YY" class="w-full text-xs p-1 border rounded mt-0.5">
+                                        <label class="block text-xs font-medium text-slate-700">From Date</label>
+                                        <input type="text" id="ref1_from" maxlength="5" inputmode="numeric" pattern="(0[1-9]|1[0-2])/[0-9]{2}" placeholder="MM/YY" class="w-full text-xs p-1 border rounded mt-0.5">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-700">To Date *</label>
-                                        <input type="text" id="ref1_to" required maxlength="5" inputmode="numeric" pattern="(0[1-9]|1[0-2])/[0-9]{2}" placeholder="MM/YY" class="w-full text-xs p-1 border rounded mt-0.5">
+                                        <label class="block text-xs font-medium text-slate-700">To Date</label>
+                                        <input type="text" id="ref1_to" maxlength="5" inputmode="numeric" pattern="(0[1-9]|1[0-2])/[0-9]{2}" placeholder="MM/YY" class="w-full text-xs p-1 border rounded mt-0.5">
                                     </div>
                                 </div>
                             </div>
@@ -295,32 +295,32 @@
                             <div class="p-4 border rounded-xl bg-slate-50/50 space-y-3">
                                 <h4 class="font-semibold text-sm text-nova-800 border-b pb-1">Reference 2 (Supervisor)</h4>
                                 <div>
-                                    <label class="block text-xs text-slate-600">Supervisor Name *</label>
-                                    <input type="text" id="ref2_name" required class="w-full px-3 py-1.5 border rounded text-sm bg-white">
+                                    <label class="block text-xs text-slate-600">Supervisor Name</label>
+                                    <input type="text" id="ref2_name" class="w-full px-3 py-1.5 border rounded text-sm bg-white">
                                 </div>
                                 <div>
-                                    <label class="block text-xs text-slate-600">Facility / Hospital Name *</label>
-                                    <input type="text" id="ref2_facility" required class="w-full px-3 py-1.5 border rounded text-sm bg-white">
+                                    <label class="block text-xs text-slate-600">Facility / Hospital Name</label>
+                                    <input type="text" id="ref2_facility" class="w-full px-3 py-1.5 border rounded text-sm bg-white">
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="block text-xs text-slate-600">Role / Title *</label>
-                                        <input type="text" id="ref2_title" required class="w-full px-3 py-1.5 border rounded text-sm bg-white" placeholder="e.g. Charge Nurse">
+                                        <label class="block text-xs text-slate-600">Role / Title</label>
+                                        <input type="text" id="ref2_title" class="w-full px-3 py-1.5 border rounded text-sm bg-white" placeholder="e.g. Charge Nurse">
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-slate-600">Phone Number *</label>
-                                        <input type="tel" id="ref2_phone" required class="w-full px-3 py-1.5 border rounded text-sm bg-white">
+                                        <label class="block text-xs text-slate-600">Phone Number</label>
+                                        <input type="tel" id="ref2_phone" class="w-full px-3 py-1.5 border rounded text-sm bg-white">
                                     </div>
                                 </div>
                                 <!-- WORK DURATION: FROM DATE & TO DATE -->
                                 <div class="grid grid-cols-2 gap-2 bg-white p-2 rounded border border-slate-200">
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-700">From Date *</label>
-                                        <input type="text" id="ref2_from" required maxlength="5" inputmode="numeric" pattern="(0[1-9]|1[0-2])/[0-9]{2}" placeholder="MM/YY" class="w-full text-xs p-1 border rounded mt-0.5">
+                                        <label class="block text-xs font-medium text-slate-700">From Date</label>
+                                        <input type="text" id="ref2_from" maxlength="5" inputmode="numeric" pattern="(0[1-9]|1[0-2])/[0-9]{2}" placeholder="MM/YY" class="w-full text-xs p-1 border rounded mt-0.5">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-700">To Date *</label>
-                                        <input type="text" id="ref2_to" required maxlength="5" inputmode="numeric" pattern="(0[1-9]|1[0-2])/[0-9]{2}" placeholder="MM/YY" class="w-full text-xs p-1 border rounded mt-0.5">
+                                        <label class="block text-xs font-medium text-slate-700">To Date</label>
+                                        <input type="text" id="ref2_to" maxlength="5" inputmode="numeric" pattern="(0[1-9]|1[0-2])/[0-9]{2}" placeholder="MM/YY" class="w-full text-xs p-1 border rounded mt-0.5">
                                     </div>
                                 </div>
                             </div>
@@ -1476,17 +1476,22 @@
 
             const dobIso = parseUsDate(document.getElementById('cand_dob').value);
             const submissionDateIso = parseUsDate(document.getElementById('cand_date').value);
-            const ref1FromIso = parseUsMonth(document.getElementById('ref1_from').value);
-            const ref1ToIso = parseUsMonth(document.getElementById('ref1_to').value);
-            const ref2FromIso = parseUsMonth(document.getElementById('ref2_from').value);
-            const ref2ToIso = parseUsMonth(document.getElementById('ref2_to').value);
+            const ref1FromValue = document.getElementById('ref1_from').value.trim();
+            const ref1ToValue = document.getElementById('ref1_to').value.trim();
+            const ref2FromValue = document.getElementById('ref2_from').value.trim();
+            const ref2ToValue = document.getElementById('ref2_to').value.trim();
+            const ref1FromIso = ref1FromValue ? parseUsMonth(ref1FromValue) : null;
+            const ref1ToIso = ref1ToValue ? parseUsMonth(ref1ToValue) : null;
+            const ref2FromIso = ref2FromValue ? parseUsMonth(ref2FromValue) : null;
+            const ref2ToIso = ref2ToValue ? parseUsMonth(ref2ToValue) : null;
 
             if (!dobIso || !submissionDateIso) {
                 showToast('Enter valid dates in MM/DD/YY format.', 'error');
                 return;
             }
-            if (!ref1FromIso || !ref1ToIso || !ref2FromIso || !ref2ToIso) {
-                showToast('Enter all reference dates in MM/YY format.', 'error');
+            if ((ref1FromValue && !ref1FromIso) || (ref1ToValue && !ref1ToIso) ||
+                (ref2FromValue && !ref2FromIso) || (ref2ToValue && !ref2ToIso)) {
+                showToast('Enter any reference dates you provide in MM/YY format, or leave them blank.', 'error');
                 return;
             }
 
@@ -1667,7 +1672,7 @@
                 <!-- SUPERVISORY REFERENCES & DATES -->
                 <div>
                     <h3 class="font-bold text-nova-800 uppercase text-[10px] tracking-wider mb-2 border-b pb-1">
-                        3. Supervisory References & Duration Worked
+                        3. Supervisory References & Duration Worked (Optional)
                     </h3>
                     <div class="grid grid-cols-2 gap-3">
                         ${subData.references.map((ref, idx) => `
