@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import bcrypt from "bcryptjs";
 import { db, usersTable, recruiterPermissions, loginActivityTable } from "@workspace/db";
-import { desc, eq } from "drizzle-orm";
+import { count, desc, eq, max } from "drizzle-orm";
 import { requireAuth, requireAdmin, requireSuperAdmin } from "./auth";
 
 const router: IRouter = Router();
@@ -43,8 +43,17 @@ router.get("/login-activity", requireAuth, requireSuperAdmin, async (req: any, r
     .orderBy(desc(loginActivityTable.createdAt))
     .limit(limit);
 
+  const summaries = await db.select({
+    username: loginActivityTable.username,
+    successfulLogins: count(),
+    lastLogin: max(loginActivityTable.createdAt),
+  }).from(loginActivityTable)
+    .where(eq(loginActivityTable.eventType, "success"))
+    .groupBy(loginActivityTable.username)
+    .orderBy(desc(max(loginActivityTable.createdAt)));
+
   res.setHeader("Cache-Control", "no-store");
-  res.json({ events, limit });
+  res.json({ events, summaries, limit });
 });
 
 router.get("/users", requireAuth, requireAdmin, async (req: any, res): Promise<void> => {
