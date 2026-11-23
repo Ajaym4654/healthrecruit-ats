@@ -17,6 +17,7 @@ interface UserRecord {
   id: number;
   username: string;
   role: string;
+  isProtected?: boolean;
   createdAt: string;
 }
 
@@ -157,10 +158,13 @@ export default function UsersPage() {
                       {u.id === me?.id && (
                         <Badge variant="outline" className="text-xs">You</Badge>
                       )}
+                      {u.isProtected && (
+                        <Badge variant="outline" className="text-xs">Protected</Badge>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={u.role === "admin" ? "default" : "secondary"} className="capitalize">
+                    <Badge variant={u.role === "admin" || u.role === "superadmin" ? "default" : "secondary"} className="capitalize">
                       {u.role}
                     </Badge>
                   </TableCell>
@@ -169,7 +173,7 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      {u.id !== me?.id && (
+                      {u.id !== me?.id && !u.isProtected && u.role !== "superadmin" && (
                         <>
                           <Button
                             variant="ghost"

@@ -5,6 +5,11 @@ import { count, desc, eq, max } from "drizzle-orm";
 import { requireAuth, requireAdmin, requireSuperAdmin } from "./auth";
 
 const router: IRouter = Router();
+const PRIMARY_SUPERADMIN_USERNAME = "ajaym4654";
+
+function isPrimarySuperAdmin(target: any): boolean {
+  return String(target?.username || "").trim().toLowerCase() === PRIMARY_SUPERADMIN_USERNAME;
+}
 
 const defaultPermissions = [
   "candidates.view",
@@ -23,7 +28,7 @@ async function getTarget(id: number) {
 }
 
 function canManage(req: any, target: any): boolean {
-  if (!target || target.isProtected || target.role === "superadmin") return false;
+  if (!target || target.isProtected || isPrimarySuperAdmin(target) || target.role === "superadmin") return false;
   if (req.user.role === "superadmin") return true;
   return req.user.role === "admin" && target.role === "recruiter";
 }
@@ -66,9 +71,14 @@ router.get("/users", requireAuth, requireAdmin, async (req: any, res): Promise<v
     createdAt: usersTable.createdAt,
   }).from(usersTable).orderBy(usersTable.createdAt);
 
+  const usersWithProtection = users.map((user) => ({
+    ...user,
+    isProtected: user.isProtected || isPrimarySuperAdmin(user) || user.role === "superadmin",
+  }));
+
   res.json(req.user.role === "superadmin"
-    ? users
-    : users.filter((u) => u.role === "recruiter"));
+    ? usersWithProtection
+    : usersWithProtection.filter((u) => u.role === "recruiter"));
 });
 
 router.post("/users", requireAuth, requireAdmin, async (req: any, res): Promise<void> => {
@@ -216,8 +226,8 @@ router.delete("/users/:id", requireAuth, requireAdmin, async (req: any, res): Pr
     return;
   }
 
-  if (!canManage(req, target)) {
-    res.status(403).json({ error: "You cannot delete this account" });
+  if (isPrimarySuperAdmin(target) || target.isProtected || target.role === "superadmin" || !canManage(req, target)) {
+    res.status(403).json({ error: "Protected Superadmin accounts cannot be deleted" });
     return;
   }
 
