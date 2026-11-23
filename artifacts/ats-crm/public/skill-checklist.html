@@ -1775,12 +1775,19 @@
                     throw new Error("Checklist report is empty. Reopen the review and retry.");
                 }
 
+                // Use a deterministic A4 capture width instead of inheriting the modal width.
+                const pdfCaptureWidth = 794;
                 host = document.createElement("div");
-                host.style.cssText = "position:fixed;left:0;top:0;width:794px;background:#fff;z-index:-1;pointer-events:none;overflow:visible;";
+                host.style.cssText = "position:absolute;left:-10000px;top:0;width:794px;min-width:794px;max-width:794px;background:#fff;z-index:-1;pointer-events:none;overflow:visible;";
 
                 const clone = element.cloneNode(true);
                 clone.removeAttribute("id");
-                clone.style.cssText += ";display:block!important;position:static!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;";
+                clone.style.cssText += ";display:block!important;position:static!important;width:794px!important;min-width:794px!important;max-width:794px!important;margin:0!important;transform:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:none!important;box-sizing:border-box!important;background:#fff!important;color:#1e293b!important;padding:20px!important;";
+                clone.querySelectorAll(":scope > *").forEach(node => {
+                    node.style.setProperty("width", "100%", "important");
+                    node.style.setProperty("max-width", "100%", "important");
+                    node.style.setProperty("box-sizing", "border-box", "important");
+                });
 
                 clone.querySelectorAll(".no-print,button").forEach(node => node.remove());
 
